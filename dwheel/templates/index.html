@@ -1,0 +1,958 @@
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>dwheel 下载管理</title>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
+.login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; gap: 1rem; background: #f0f2f5; }
+.login-box { background: #fff; padding: 2rem; border-radius: 8px; width: 360px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
+.login-box h1 { margin-bottom: 1.5rem; font-size: 1.25rem; text-align: center; color: #1a1a1a; font-weight: 600; }
+.login-box input { width: 100%; padding: 10px 12px; margin-bottom: 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 14px; outline: none; background: #fff; color: #1a1a1a; }
+.login-box input:focus { border-color: #2563eb; }
+.login-box button { width: 100%; padding: 10px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
+.login-box button:hover { background: #1d4ed8; }
+.login-box .error { color: #dc2626; font-size: 13px; margin-top: 8px; text-align: center; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 220px; background: #fff; border-right: 1px solid #e0e0e0; padding: 1rem; display: flex; flex-direction: column; }
+.sidebar h2 { font-size: 1rem; margin-bottom: 1.5rem; padding: 0 12px; color: #2563eb; font-weight: 700; }
+.sidebar a { display: block; padding: 8px 12px; margin: 1px 0; border-radius: 6px; color: #555; text-decoration: none; font-size: 14px; cursor: pointer; }
+.sidebar a:hover { background: #f0f0f0; color: #1a1a1a; }
+.sidebar a.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
+.sidebar .logout { margin-top: auto; color: #dc2626; }
+.main { flex: 1; padding: 1.5rem; max-width: 960px; }
+.page-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1a1a1a; }
+.card { background: #fff; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: .75rem; border: 1px solid #e0e0e0; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
+.stat-card { background: #fff; border-radius: 8px; padding: 1rem; text-align: center; border: 1px solid #e0e0e0; }
+.stat-card .num { font-size: 1.75rem; font-weight: 700; color: #2563eb; }
+.stat-card .label { font-size: 12px; color: #888; margin-top: 2px; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+th { color: #888; font-weight: 500; font-size: 12px; }
+tr:hover { background: #fafafa; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+.badge-green { background: #dcfce7; color: #166534; }
+.badge-yellow { background: #fef9c3; color: #854d0e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-blue { background: #dbeafe; color: #1e40af; }
+.btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
+.btn-primary { background: #2563eb; color: #fff; }
+.btn-primary:hover { background: #1d4ed8; }
+.btn-danger { background: #dc2626; color: #fff; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-default { background: #e0e0e0; color: #333; }
+.btn-default:hover { background: #d0d0d0; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+.mr-2 { margin-right: 8px; }
+.mt-2 { margin-top: 8px; }
+.mb-2 { margin-bottom: 8px; }
+.flex { display: flex; }
+.gap-2 { gap: 8px; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.text-muted { color: #888; font-size: 13px; }
+.progress-bar { height: 20px; background: #eee; border-radius: 6px; overflow: hidden; position: relative; margin: 8px 0; }
+.progress-bar .fill { height: 100%; background: #2563eb; border-radius: 6px; transition: width 1s; }
+.progress-bar .text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; }
+.hidden { display: none !important; }
+select, input[type="text"], input[type="number"] { border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #1a1a1a; padding: 8px 12px; font-size: 14px; outline: none; }
+select:focus, input:focus { border-color: #2563eb; }
+.floating { position: fixed; bottom: 24px; right: 24px; z-index: 100; }
+.toast { background: #333; color: #fff; padding: 10px 16px; border-radius: 6px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.2); animation: slideIn .2s; font-size: 13px; }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+textarea { border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #1a1a1a; padding: 12px; font-size: 13px; font-family: monospace; width: 100%; min-height: 100px; outline: none; }
+textarea:focus { border-color: #2563eb; }
+@media (max-width: 768px) { .layout { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; } }
+</style>
+</head>
+<body>
+<div x-data="app()">
+  <!-- Login -->
+  <div x-show="!token" class="login-page">
+    <div class="login-box">
+      <h1>dwheel</h1>
+      <input type="text" x-model="username" placeholder="用户名" @keyup.enter="login()">
+      <input type="password" x-model="password" placeholder="密码" @keyup.enter="login()">
+      <button @click="login()">登录</button>
+      <div class="error" x-show="error" x-text="error"></div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div x-show="token" class="layout">
+    <div class="sidebar">
+      <h2>dwheel</h2>
+      <a :class="{active: page==='dashboard'}" @click="page='dashboard'">概览</a>
+      <a :class="{active: page==='agents'}" @click="page='agents'">机器管理</a>
+      <a :class="{active: page==='jobs'}" @click="page='jobs'">下载作业</a>
+      <a :class="{active: page==='import'}" @click="page='import'">导入</a>
+      <a :class="{active: page==='queue'}" @click="page='queue'; loadPendingTasks()">任务队列</a>
+      <a :class="{active: page==='allocate'}" @click="page='allocate'; loadPendingTasks()">分配作业</a>
+      <a :class="{active: page==='monitor'}" @click="page='monitor'; loadMonitor()">监控</a>
+      <a :class="{active: page==='settings'}" @click="page='settings'">设置</a>
+      <a class="logout" @click="logout()">退出</a>
+    </div>
+    <div class="main">
+      <!-- Dashboard -->
+      <div x-show="page==='dashboard'">
+        <h2 class="page-title">概览</h2>
+        <div class="card-grid">
+          <div class="stat-card"><div class="num" x-text="dashboard.agents">0</div><div class="label">机器数</div></div>
+          <div class="stat-card"><div class="num" x-text="dashboard.online">0</div><div class="label">在线</div></div>
+          <div class="stat-card"><div class="num" x-text="dashboard.jobs_running">0</div><div class="label">运行中</div></div>
+          <div class="stat-card"><div class="num" x-text="dashboard.jobs_completed">0</div><div class="label">已完成</div></div>
+        </div>
+        <div class="card" x-show="dashboard.disk_warnings && dashboard.disk_warnings.length" style="background:#fef2f2;border-color:#fecaca">
+          <h4 style="color:#dc2626;margin-bottom:4px">磁盘容量告警</h4>
+          <template x-for="w in dashboard.disk_warnings" :key="w.label">
+            <div style="font-size:13px;color:#991b1b">
+              <span x-text="w.agent_name+': '+w.label"></span>
+              <span style="margin-left:8px" x-text="'剩余 '+w.free_gb+'GB ('+w.pct+'% 已用)'"></span>
+            </div>
+          </template>
+        </div>
+      </div>
+
+      <!-- Agent Management -->
+      <div x-show="page==='agents'">
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="page-title" style="margin-bottom:0">机器管理</h2>
+          <button class="btn btn-primary" @click="showAddAgent=true">+ 添加机器</button>
+        </div>
+
+        <div class="card" x-show="showAddAgent">
+          <h3 class="mb-2">添加机器</h3>
+          <div class="flex gap-2 items-center" style="flex-wrap:wrap">
+            <input type="text" x-model="newAgent.name" placeholder="名称" style="width:150px">
+            <input type="text" x-model="newAgent.host" placeholder="IP 地址" style="width:150px">
+            <input type="number" x-model="newAgent.port" placeholder="端口" style="width:80px">
+            <input type="text" x-model="newAgent.api_key" placeholder="API Key" style="width:180px">
+            <button class="btn btn-primary btn-sm" @click="addAgent()">保存</button>
+            <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="showAddAgent=false">取消</button>
+          </div>
+        </div>
+
+        <div class="card" x-show="agents.length===0">
+          <div class="text-muted">暂无机器</div>
+        </div>
+        <template x-for="a in agents" :key="a.id">
+          <div class="card">
+            <div class="flex justify-between items-center">
+              <div>
+                <strong x-text="a.name"></strong>
+                <span class="text-muted" style="margin-left:8px" x-text="a.host+':'+a.port"></span>
+                <span :class="'badge '+(a.is_online?'badge-green':'badge-red')" x-text="a.is_online?'在线':'离线'" style="margin-left:8px"></span>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="pingAgent(a.id)">检测</button>
+                <button class="btn btn-sm btn-danger" @click="deleteAgent(a.id)">删除</button>
+              </div>
+            </div>
+            <div x-show="a.disks && a.disks.length" class="mt-2">
+              <div class="text-muted" style="font-size:12px;margin-bottom:4px">磁盘:</div>
+              <template x-for="d in a.disks" :key="d.id">
+                <div style="font-size:13px;padding:2px 0">
+                  <span x-text="d.label || d.path"></span>
+                  <span class="text-muted" style="margin-left:8px" x-text="(d.free_bytes/1024/1024/1024).toFixed(1)+' GB / '+(d.total_bytes/1024/1024/1024).toFixed(1)+' GB'"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Jobs -->
+      <div x-show="page==='jobs'">
+        <h2 class="page-title">下载作业</h2>
+        <div x-show="!selectedJob">
+          <div class="card" x-show="jobs.length===0"><div class="text-muted">暂无作业</div></div>
+          <template x-for="j in jobs" :key="j.id">
+            <div class="card" style="cursor:pointer" @click="viewJob(j.id)">
+              <div class="flex justify-between items-center">
+                <div>
+                  <strong x-text="j.name || 'job_'+j.id"></strong>
+                  <span :class="'badge '+(j.status==='running'?'badge-yellow':j.status==='completed'?'badge-green':'badge-blue')" style="margin-left:8px" x-text="j.status"></span>
+                </div>
+                <div class="text-muted" x-text="new Date(j.created_at).toLocaleString()"></div>
+              </div>
+              <div class="flex gap-2 mt-2 text-muted" style="font-size:13px">
+                <span x-text="'共 '+j.total_episodes+' 个文件'"></span>
+                <span x-show="j.completed>0" x-text="'已完成 '+j.completed"></span>
+                <span x-show="j.failed>0" style="color:#ef4444" x-text="'失败 '+j.failed"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+        <!-- Job Detail -->
+        <template x-if="selectedJob">
+        <div>
+          <button class="btn btn-sm" style="background:#475569;color:#e2e8f0;margin-bottom:12px" @click="selectedJob=null">← 返回</button>
+          <div class="card">
+            <div class="flex justify-between items-center">
+              <h3 x-text="selectedJob.name"></h3>
+              <div>
+                <button class="btn btn-sm btn-danger" @click="stopJob(selectedJob.id)" x-show="selectedJob.status==='running'">停止</button>
+              </div>
+            </div>
+            <div class="mt-2">
+              <div class="progress-bar">
+                <div class="fill" :style="'width:'+(selectedJob.total_episodes?((selectedJob.completed+selectedJob.failed)/selectedJob.total_episodes*100)+'%':'0%')"></div>
+                <div class="text" x-text="selectedJob.completed+' / '+selectedJob.total_episodes"></div>
+              </div>
+            </div>
+            <div class="flex gap-2 mt-2 text-muted" style="font-size:13px">
+              <span x-text="'已完成: '+selectedJob.completed"></span>
+              <span x-show="selectedJob.failed>0" style="color:#ef4444" x-text="'失败: '+selectedJob.failed"></span>
+              <span x-show="selectedJob.speed>0" x-text="'速度: '+selectedJob.speed.toFixed(1)+' eps/s'"></span>
+              <span x-show="selectedJob.elapsed>0" x-text="'耗时: '+Math.floor(selectedJob.elapsed/60)+'m'+Math.floor(selectedJob.elapsed%60)+'s'"></span>
+              <span x-text="'状态: '+selectedJob.status"></span>
+            </div>
+          </div>
+
+          <!-- 任务级进度 -->
+          <div class="card" x-show="selectedJob.task_detail && selectedJob.task_detail.length">
+            <h4 class="mb-2">任务进度</h4>
+            <template x-for="t in selectedJob.task_detail" :key="t.task_id">
+              <div class="mb-2" style="font-size:13px;border-bottom:1px solid #eee;padding-bottom:6px">
+                <div class="flex justify-between mb-1">
+                  <span style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></span>
+                  <span class="text-muted" x-text="(t.completed||0)+' / '+(t.total||0)"></span>
+                  <span style="font-size:12px" x-text="(t.disk||'').split('/').slice(-2).join('/')"></span>
+                </div>
+                <div class="progress-bar" style="height:12px">
+                  <div class="fill" :style="'width:'+(t.total>0?((t.completed+t.failed)/t.total*100):0)+'%'"></div>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- 错误列表 -->
+          <div class="card" x-show="selectedJob.errors && selectedJob.errors.length">
+            <h4 class="mb-2" style="color:#dc2626">下载失败 (x-text="selectedJob.errors.length">)</h4>
+            <div style="max-height:300px;overflow-y:auto;font-size:12px;font-family:monospace">
+              <template x-for="(e,i) in selectedJob.errors" :key="i">
+                <div style="padding:4px 0;border-bottom:1px solid #f0f0f0">
+                  <span x-text="e.episode_id?.slice(0,12)+'...'"></span>
+                  <span class="text-muted" style="margin-left:8px" x-text="e.task_id?.slice(0,12)+'...'"></span>
+                  <span x-show="e.reason" style="color:#dc2626;margin-left:8px" x-text="e.reason?.slice(0,100)"></span>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <div class="card" x-show="selectedJob.tasks && selectedJob.tasks.length">
+            <h4 class="mb-2">任务列表</h4>
+            <table>
+              <tr><th>Task ID</th><th>磁盘</th><th>文件数</th><th>状态</th></tr>
+              <template x-for="t in selectedJob.tasks" :key="t.id">
+                <tr>
+                  <td x-text="t.task_id?.slice(0,16)+'...'"></td>
+                  <td style="font-size:12px" x-text="t.disk_path?.split('/').slice(-2).join('/')"></td>
+                  <td x-text="t.selected_episodes"></td>
+                  <td><span :class="'badge '+ (t.status==='completed'?'badge-green':'badge-yellow')" x-text="t.status"></span></td>
+                </tr>
+              </template>
+            </table>
+          </div>
+        </div>
+        </template>
+      </div>
+
+      <!-- Settings -->
+      <div x-show="page==='monitor'">
+        <h2 class="page-title">监控面板</h2>
+        
+        <div class="card-grid">
+          <div class="stat-card"><div class="num" x-text="mon.running" :style="mon.running>0?'color:#2563eb':''">0</div><div class="label">运行中</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.completed">0</div><div class="label">已完成</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.failed" :style="mon.failed>0?'color:#dc2626':''">0</div><div class="label">失败</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.disks.length">0</div><div class="label">磁盘数</div></div>
+        </div>
+
+        <div class="card" x-show="mon.disks.length">
+          <h3 class="mb-2">磁盘使用</h3>
+          <template x-for="d in mon.disks" :key="d.id">
+            <div class="mb-2" style="font-size:13px">
+              <div class="flex justify-between">
+                <span x-text="d.agent_name+': '+d.label"></span>
+                <span class="text-muted" x-text="((d.total_bytes-d.free_bytes)/1024/1024/1024).toFixed(1)+'G / '+(d.total_bytes/1024/1024/1024).toFixed(1)+'G'"></span>
+              </div>
+              <div class="progress-bar" style="height:16px;background:#eee">
+                <div class="fill" :style="'width:'+((d.total_bytes-d.free_bytes)/d.total_bytes*100)+'%;background:#3b82f6;border-radius:6px'"></div>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="card" x-show="mon.jobs.length">
+          <h3 class="mb-2">下载进度</h3>
+          <template x-for="j in mon.jobs" :key="j.id">
+            <div class="mb-2" style="font-size:13px;border-bottom:1px solid #eee;padding-bottom:8px">
+              <div class="flex justify-between">
+                <span x-text="j.name || 'job_'+j.id"></span>
+                <span :class="'badge '+(j.status==='running'?'badge-yellow':j.status==='completed'?'badge-green':j.status==='failed'?'badge-red':'badge-blue')" x-text="j.status"></span>
+              </div>
+              <div class="progress-bar" style="height:16px;background:#eee">
+                <div class="fill" :style="'width:'+(j.total_episodes?((j.agent_completed||0+j.agent_failed||0)/j.total_episodes*100)+'%':'0%')+';background:#2563eb;border-radius:6px'"></div>
+                <div class="text" x-text="(j.agent_completed||0)+' / '+(j.total_episodes||0)"></div>
+              </div>
+              <div class="flex gap-2 text-muted mt-1" style="font-size:11px">
+                <span x-show="j.agent_failed>0" style="color:#dc2626" x-text="'失败: '+j.agent_failed"></span>
+                <span x-show="j.agent_elapsed" x-text="'耗时: '+Math.floor(j.agent_elapsed/60)+'m'"></span>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div class="card">
+          <h3 class="mb-2">操作日志</h3>
+          <div style="max-height:400px;overflow-y:auto;font-size:12px;font-family:monospace">
+            <div x-show="!mon.logs.length" class="text-muted">暂无日志</div>
+            <template x-for="l in mon.logs" :key="l.id">
+              <div style="padding:3px 0;border-bottom:1px solid #f0f0f0">
+                <span class="text-muted" x-text="l.created_at?.slice(5,19)"></span>
+                <span x-text="' ['+l.level+'] '" :style="l.level==='error'?'color:#dc2626':'color:#888'"></span>
+                <span x-text="l.message"></span>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
+      <!-- Import (简化版：选机器 → 粘贴/上传 → 设时长 → 自动分配 → 一键下载) -->
+      <div x-show="page==='import'">
+        <h2 class="page-title">导入并下载</h2>
+
+        <div class="card">
+          <h3 class="mb-2">选择机器</h3>
+          <select x-model="qi.agent_id">
+            <option value="">-- 选择机器 --</option>
+            <template x-for="a in agents" :key="a.id">
+              <option :value="a.id" x-text="a.name+' ('+a.host+')'"></option>
+            </template>
+          </select>
+          <span x-show="qi.agent_id && selectedAgentDisks.length" class="text-muted" style="margin-left:12px;font-size:13px">
+            <template x-for="d in selectedAgentDisks" :key="d.path">
+              <span style="margin-right:12px" x-text="d.label+': '+(d.free_bytes/1024/1024/1024).toFixed(1)+'GB'"></span>
+            </template>
+          </span>
+        </div>
+
+        <div class="card" x-show="qi.agent_id">
+          <h3 class="mb-2">上传表格（自动识别列 + 时长）</h3>
+          <p class="text-muted mb-2" style="font-size:13px">上传 xlsx/xls/csv/txt 文件，自动识别 task_id 和时长列</p>
+          <div class="flex gap-2" style="flex-wrap:wrap;align-items:center">
+            <input type="file" id="importFile" accept=".xlsx,.xls,.txt,.csv" style="font-size:13px"
+                   @change="qiUploadPreview($event)">
+            <span class="text-muted" style="font-size:13px">或直接粘贴 task_id 到下方文本框</span>
+          </div>
+        </div>
+
+        <!-- Mapping Panel -->
+        <div class="card" x-show="qi.preview_sheets.length && !qi.extracted">
+          <div class="flex justify-between items-center mb-2">
+            <h3>确认列映射</h3>
+            <select x-show="qi.preview_sheets.length>1" x-model="qi.active_sheet" style="width:auto;font-size:13px">
+              <template x-for="(s,i) in qi.preview_sheets" :key="i">
+                <option :value="i" x-text="s.name+' ('+s.total_rows+'行)'"></option>
+              </template>
+            </select>
+          </div>
+          <template x-if="qi.preview_sheets.length">
+          <template x-for="s in [qi.preview_sheets[qi.active_sheet]]" :key="qi.active_sheet">
+            <div>
+              <div class="flex gap-2 mb-2" style="flex-wrap:wrap;align-items:center">
+                <span style="font-size:13px">Task ID 列:</span>
+                <select :value="qi.mappings[qi.active_sheet]?.task_id_col"
+                        @change="qi.mappings[qi.active_sheet].task_id_col = $event.target.value !== '' ? parseInt($event.target.value) : null"
+                        style="width:auto;font-size:13px">
+                  <option :value="null">-- 选择 --</option>
+                  <template x-for="c in s.columns" :key="c.index">
+                    <option :value="c.index"
+                            x-text="(c.index+1)+'. '+c.header+(c.detected==='task_id'?' [自动识别]':'')"
+                            :style="c.detected==='task_id'?'color:#2563eb;font-weight:600':''"></option>
+                  </template>
+                </select>
+                <span style="font-size:13px;margin-left:8px">时长列:</span>
+                <select :value="qi.mappings[qi.active_sheet]?.duration_col"
+                        @change="qi.mappings[qi.active_sheet].duration_col = $event.target.value !== '' ? parseInt($event.target.value) : null"
+                        style="width:auto;font-size:13px">
+                  <option :value="null">-- 选择 --</option>
+                  <template x-for="c in s.columns" :key="c.index">
+                    <option :value="c.index"
+                            x-text="(c.index+1)+'. '+c.header+(c.detected==='duration'?' [自动识别]':'')"
+                            :style="c.detected==='duration'?'color:#2563eb;font-weight:600':''"></option>
+                  </template>
+                </select>
+              </div>
+              <div style="max-height:250px;overflow:auto;font-size:12px">
+                <table>
+                  <tr>
+                    <template x-for="c in s.columns" :key="c.index">
+                      <th x-text="c.header||'列'+(c.index+1)"
+                          :style="(c.index===qi.mappings[qi.active_sheet].task_id_col||c.index===qi.mappings[qi.active_sheet].duration_col)?'color:#2563eb':''"></th>
+                    </template>
+                  </tr>
+                  <template x-for="row in s.preview_rows" :key="row[0]">
+                    <tr>
+                      <template x-for="(cell,ci) in s.columns" :key="ci">
+                        <td x-text="row[ci]||''"
+                            :style="(ci===qi.mappings[qi.active_sheet].task_id_col||ci===qi.mappings[qi.active_sheet].duration_col)?'background:#eff6ff':''"></td>
+                      </template>
+                    </tr>
+                  </template>
+                </table>
+              </div>
+              <div class="flex gap-2 mt-2">
+                <button class="btn btn-sm btn-primary" @click="qiDoExtract()">确认提取</button>
+                <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="qi.preview_sheets=[]">取消</button>
+              </div>
+            </div>
+          </template>
+          </template>
+        </div>
+
+        <!-- Text Input -->
+        <div class="card" x-show="qi.agent_id && !qi.preview_sheets.length">
+          <h3 class="mb-2">输入 Task ID</h3>
+          <textarea x-model="qi.task_text" placeholder="粘贴 task_id..."></textarea>
+        </div>
+
+        <div class="card" x-show="qi_parsed.length && qi.agent_id">
+          <h3 class="mb-2">交付时长设置（小时）</h3>
+          <p class="text-muted mb-2" style="font-size:13px">设置每个 task 的交付时长（0 或留空 = 全部下载）</p>
+          <div class="flex gap-2 items-center mb-2" style="font-weight:500;color:#888;font-size:12px">
+            <span style="min-width:200px">Task ID</span>
+            <span style="min-width:80px">时长(h)</span>
+          </div>
+          <template x-for="tid in qi_parsed" :key="tid">
+            <div class="flex gap-2 items-center mb-1" style="font-size:13px">
+              <span style="min-width:200px;font-family:monospace;font-size:12px" x-text="tid.slice(0,16)+'...'"></span>
+              <input type="number" x-model="qi.durations[tid]" placeholder="0" style="width:80px;padding:4px 8px" min="0" step="0.5">
+            </div>
+          </template>
+          <button class="btn btn-sm btn-primary mt-2" @click="qiPrepare()" x-text="qi.loading ? '查询中...' : '查询并自动分配'"></button>
+        </div>
+
+        <div class="card" x-show="qi.tasks.length">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="mb-0">分配结果</h3>
+            <div>
+              <span class="text-muted" style="margin-right:12px" x-text="'共 '+qi.tasks.length+' 个 task, '+qi.total_eps+' episodes'"></span>
+              <span class="text-muted" x-text="'总计 '+(qi.total_bytes/1024/1024/1024).toFixed(2)+' GB'"></span>
+            </div>
+          </div>
+          <div style="max-height:300px;overflow-y:auto;font-size:13px">
+            <table>
+              <tr><th style="min-width:200px">Task ID</th><th>磁盘</th><th style="width:160px">手动覆盖</th><th style="text-align:right">文件数</th><th style="text-align:right">大小</th></tr>
+              <template x-for="t in qi.tasks" :key="t.task_id">
+                <tr>
+                  <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
+                  <td x-text="t.disk_path.split('/').slice(-2).join('/')"></td>
+                  <td>
+                    <select x-model="qi.overrides[t.task_id]" style="font-size:12px;width:100%;padding:2px 4px">
+                      <option value="">自动 (当前磁盘)</option>
+                      <template x-for="d in selectedAgentDisks" :key="d.path">
+                        <option :value="d.path" x-text="d.label"></option>
+                      </template>
+                    </select>
+                  </td>
+                  <td style="text-align:right" x-text="t.episode_count"></td>
+                  <td style="text-align:right" x-text="(t.total_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
+                </tr>
+              </template>
+            </table>
+          </div>
+          <div x-show="diskWarning" class="text-muted mb-2" style="color:#dc2626;font-size:13px" x-text="diskWarning"></div>
+          <button class="btn btn-primary mt-2" @click="qiCreateJob()" x-text="qi.creating ? '正在启动...' : '一键下载'"></button>
+        </div>
+      </div>
+
+      <!-- Task Queue -->
+      <div x-show="page==='queue'">
+        <h2 class="page-title">任务队列</h2>
+
+        <div class="flex gap-2 mb-2" style="flex-wrap:wrap;align-items:center">
+          <select x-model="pq.status_filter" style="width:auto">
+            <option value="">全部状态</option>
+            <option value="pending">待处理</option>
+            <option value="running">运行中</option>
+            <option value="completed">已完成</option>
+          </select>
+          <span class="text-muted" style="font-size:13px" x-text="'共 '+pq.tasks.length+' 条'"></span>
+          <button class="btn btn-sm" style="background:#475569;color:#e2e8f0;margin-left:auto" @click="pqRefresh()">刷新</button>
+          <button class="btn btn-sm btn-primary" @click="pqRetrySelected()" x-show="pq.selected.length">重试选中</button>
+        </div>
+
+        <div class="card" x-show="!pq.tasks.length"><div class="text-muted">暂无任务</div></div>
+
+        <div class="card" x-show="pq.tasks.length">
+          <table>
+            <tr>
+              <th style="width:30px"><input type="checkbox" @change="pq.toggleAll($event)"></th>
+              <th>Task ID</th>
+              <th>磁盘</th>
+              <th style="text-align:right">文件数</th>
+              <th style="text-align:right">大小</th>
+              <th>状态</th>
+              <th style="text-align:right">操作</th>
+            </tr>
+            <template x-for="t in pq.filtered" :key="t.id">
+              <tr>
+                <td><input type="checkbox" :value="t.id" x-model="pq.selected"></td>
+                <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
+                <td style="font-size:12px" x-text="(t.disk_path||'').split('/').slice(-2).join('/')"></td>
+                <td style="text-align:right" x-text="t.episode_count"></td>
+                <td style="text-align:right;font-size:12px" x-text="(t.estimated_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
+                <td>
+                  <span :class="'badge '+(t.status==='completed'?'badge-green':t.status==='running'?'badge-yellow':'badge-blue')" x-text="t.status"></span>
+                </td>
+                <td style="text-align:right">
+                  <button class="btn btn-sm btn-danger" @click="pqDelete(t.id)">删除</button>
+                  <button class="btn btn-sm btn-primary" @click="pqRetry(t.id)" x-show="t.status!=='running'">重试</button>
+                </td>
+              </tr>
+            </template>
+          </table>
+        </div>
+      </div>
+
+      <!-- Allocate -->
+      <div x-show="page==='allocate'">
+        <h2 class="page-title">分配作业</h2>
+
+        <div class="card">
+          <div class="flex gap-2 mb-2" style="flex-wrap:wrap;align-items:center">
+            <select x-model="al.agent_id" style="width:auto">
+              <option value="">-- 选择机器 --</option>
+              <template x-for="a in agents" :key="a.id">
+                <option :value="a.id" x-text="a.name+' ('+a.host+')'"></option>
+              </template>
+            </select>
+            <button class="btn btn-sm btn-primary" @click="alPreview()" x-text="al.loading ? '计算中...' : '预览分配'"></button>
+            <span class="text-muted" style="font-size:13px" x-show="al.pending_count>0" x-text="'待处理: '+al.pending_count+' 个 task'"></span>
+          </div>
+        </div>
+
+        <div class="card" x-show="al.plan.length">
+          <h3 class="mb-2">分配方案</h3>
+          <template x-for="(p,i) in al.plan" :key="p.disk_path">
+            <div class="mb-3" style="border:1px solid #e0e0e0;border-radius:8px;padding:12px">
+              <div class="flex justify-between items-center mb-2">
+                <div>
+                  <strong x-text="p.label"></strong>
+                  <span class="text-muted" style="margin-left:8px;font-size:12px" x-text="p.free_gb.toFixed(0)+'GB 可用'"></span>
+                </div>
+                <div class="text-muted" style="font-size:13px">
+                  <span x-text="p.task_count+' 个 task'"></span>
+                  <span style="margin-left:8px" x-text="p.total_size_gb.toFixed(1)+' GB'"></span>
+                  <span style="margin-left:8px" x-text="'分配后剩余 '+p.remaining_gb.toFixed(1)+' GB'"></span>
+                </div>
+              </div>
+              <div class="progress-bar" style="height:14px">
+                <div class="fill" :style="'width:'+((p.free_gb-p.remaining_gb)/p.free_gb*100)+'%'"></div>
+              </div>
+              <button class="btn btn-sm btn-primary mt-2" @click="alCreateJob(i)">下载这批</button>
+            </div>
+          </template>
+          <div class="mt-2" style="font-size:13px;color:#888" x-show="al.unassigned>0" x-text="'剩余 '+al.unassigned+' 个 task 磁盘放不下，等待重新分配'"></div>
+        </div>
+
+        <div class="card" x-show="!al.plan.length && al.pending_count>0"><div class="text-muted">选机器后点「预览分配」</div></div>
+      </div>
+
+      <div x-show="page==='settings'">
+        <h2 class="page-title">设置</h2>
+        <div class="card">
+          <h3 class="mb-2">OBS 数据源</h3>
+          <div x-show="!showAddObs">
+            <button class="btn btn-sm btn-primary" @click="showAddObs=true">+ 添加源</button>
+          </div>
+            <div x-show="showAddObs" class="flex gap-2 items-center mt-2" style="flex-wrap:wrap">
+              <input type="text" x-model="newObs.name" placeholder="名称" style="width:120px">
+              <input type="text" x-model="newObs.bucket" placeholder="obs://bucket/prefix" style="width:240px">
+              <input type="text" x-model="newObs.audit_bucket" placeholder="审核路径(可选)" style="width:180px">
+              <button class="btn btn-sm btn-primary" @click="addObs()">保存</button>
+              <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="showAddObs=false">取消</button>
+            </div>
+            <template x-for="s in obsSources" :key="s.id">
+              <div class="mt-2" style="font-size:13px;padding:4px 0;border-bottom:1px solid #eee">
+                <strong x-text="s.name"></strong>
+                <span class="text-muted" style="margin-left:8px" x-text="s.bucket"></span>
+                <span x-show="s.audit_bucket" class="badge badge-blue" style="margin-left:8px" x-text="'审核: '+s.audit_bucket"></span>
+              </div>
+            </template>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="floating">
+    <template x-for="(msg,i) in toasts" :key="i">
+      <div class="toast" @click="toasts.splice(i,1)" x-text="msg"></div>
+    </template>
+  </div>
+</div>
+
+<script>
+function app() {
+  return {
+    token: localStorage.getItem('dwheel_token') || '',
+    username: '', password: '', error: '',
+    page: 'dashboard',
+    toasts: [],
+
+    // Dashboard
+    dashboard: { agents:0, online:0, jobs_running:0, jobs_completed:0 },
+    mon: { logs:[], jobs:[], disks:[], running:0, completed:0, failed:0 },
+
+    // Agents
+    agents: [],
+    showAddAgent: false,
+    newAgent: { name:'', host:'', port:8081, api_key:'' },
+
+    // Jobs
+    jobs: [],
+    selectedJob: null,
+
+    // Create
+    create: {},
+
+    // Settings
+    obsSources: [],
+    showAddObs: false,
+    newObs: { name:'', bucket:'', audit_bucket:'' },
+
+    // Import
+    importResult: { ids:[], estimates:[], estimating:false, total_episodes:0, total_size:0, total_size_text:'' },
+
+    // Quick Import (新版一键流程)
+    qi: { agent_id:'', task_text:'', tasks:[], total_eps:0, total_bytes:0, loading:false, creating:false, durations:{}, overrides:{}, preview_sheets:[], file_key:'', active_sheet:0, mappings:[], extracted:false },
+
+    // Pending Queue
+    pq: { tasks:[], selected:[], status_filter:'' },
+
+    // Allocate
+    al: { agent_id:'', plan:[], pending_count:0, unassigned:0, loading:false },
+
+    init() {
+      if (this.token) this.loadDashboard();
+      setInterval(() => { this.autoRefreshJob(); }, 1000);
+      setInterval(() => { if (this.page === 'monitor') this.loadMonitor(); }, 2000);
+    },
+
+    toast(msg) { this.toasts.push(msg); setTimeout(() => this.toasts.shift(), 3000); },
+
+    api(path, opts={}) {
+      opts.headers = opts.headers || {};
+      if (this.token) opts.headers['Authorization'] = 'Bearer '+this.token;
+      if (opts.body && typeof opts.body === 'object' && !(opts.body instanceof FormData)) {
+        opts.body = JSON.stringify(opts.body);
+        opts.headers['Content-Type'] = 'application/json';
+      }
+      return fetch(path, opts).then(r => {
+        if (r.status === 401) { this.token=''; localStorage.removeItem('dwheel_token'); }
+        return r.json();
+      });
+    },
+
+    login() {
+      // 用户登录：验证凭证后存储 Token 到 localStorage
+      this.api('/api/v1/auth/login', {method:'POST', body:{username:this.username, password:this.password}})
+        .then(r => { if (r.ok) { this.token = r.token; localStorage.setItem('dwheel_token', r.token); this.loadDashboard(); this.error=''; } else { this.error = r.error || '登录失败'; }});
+    },
+    logout() {
+      this.token = ''; localStorage.removeItem('dwheel_token'); this.page = 'dashboard';
+    },
+
+    loadDashboard() {
+      // 加载仪表盘数据（统计/Agent/任务/OBS源/监控）
+      this.api('/api/v1/dashboard').then(r => { if (r.ok) this.dashboard = r; });
+      this.loadAgents();
+      this.loadJobs();
+      this.loadPendingTasks();
+      this.api('/api/v1/obs-sources').then(r => { if (r.ok) this.obsSources = r.sources; });
+      this.loadMonitor();
+    },
+
+    // Agents
+    loadAgents() { this.api('/api/v1/agents').then(r => { if (r.ok) this.agents = r.agents; }); },
+    addAgent() {
+      this.api('/api/v1/agents', {method:'POST', body:this.newAgent}).then(r => {
+        if (r.ok) { this.toast('机器已添加'); this.showAddAgent = false; this.newAgent = {name:'', host:'', port:8081, api_key:''}; this.loadAgents(); }
+        else this.toast('添加失败: '+r.error);
+      });
+    },
+    deleteAgent(id) {
+      if (!confirm('确定删除此机器?')) return;
+      this.api('/api/v1/agents/'+id, {method:'DELETE'}).then(r => { if (r.ok) { this.toast('已删除'); this.loadAgents(); }});
+    },
+    pingAgent(id) {
+      this.api('/api/v1/agents/'+id+'/ping', {method:'POST'}).then(r => {
+        if (r.ok) { this.toast('检测成功: '+(r.agent_status?.ok ? '在线' : '离线')); this.loadAgents(); }
+        else this.toast('检测失败');
+      });
+    },
+
+    // Jobs
+    loadJobs() {
+      this.api('/api/v1/jobs').then(r => { if (r.ok) this.jobs = r.jobs; });
+    },
+    viewJob(id) {
+      // 查看作业详情（触发自动刷新）
+      this.api('/api/v1/jobs/'+id).then(r => { if (r.ok) this.selectedJob = r.job; });
+    },
+    stopJob(id) {
+      // 停止运行中的作业
+      this.api('/api/v1/jobs/'+id+'/stop', {method:'POST'}).then(r => { if (r.ok) { this.toast('已停止'); this.loadJobs(); this.selectedJob=null; }});
+    },
+    autoRefreshJob() {
+      if (this.selectedJob && this.selectedJob.status === 'running') {
+        this.api('/api/v1/jobs/'+this.selectedJob.id+'/progress').then(r => {
+          if (r.ok && this.selectedJob) {
+            this.selectedJob.completed = r.completed;
+            this.selectedJob.failed = r.failed;
+            this.selectedJob.speed = r.speed || 0;
+            this.selectedJob.elapsed = r.elapsed || 0;
+            if (r.total) this.selectedJob.total_episodes = r.total;
+            if (r.tasks) this.selectedJob.task_detail = r.tasks;
+            if (r.errors) this.selectedJob.errors = r.errors;
+          }
+        });
+      }
+    },
+
+    // Settings
+    addObs() {
+      // 添加 OBS 数据源配置
+      this.api('/api/v1/obs-sources', {method:'POST', body:this.newObs}).then(r => {
+        if (r.ok) { this.toast('已添加'); this.showAddObs = false; this.newObs = {name:'', bucket:''}; this.loadDashboard(); }
+      });
+    },
+
+    // Quick Import (一键导入 + 自动分配 + 下载)
+    get qi_parsed() {
+      const ids = this.qi.task_text.match(/[0-9a-f]{32}/gi) || [];
+      return [...new Set(ids.map(x => x.toLowerCase()))];
+    },
+    qiUploadPreview(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      const fd = new FormData();
+      fd.append('file', file);
+      this.api('/api/v1/import/preview', {method:'POST', body:fd}).then(r => {
+        if (r.ok) {
+          this.qi.preview_sheets = r.sheets;
+          this.qi.file_key = r.file_key;
+          this.qi.active_sheet = 0;
+          this.qi.mappings = r.sheets.map(s => ({
+            task_id_col: s.suggested.task_id_col,
+            duration_col: s.suggested.duration_col,
+          }));
+          this.qi.extracted = false;
+        } else {
+          this.toast(r.error || '解析失败');
+        }
+      });
+    },
+    qiDoExtract() {
+      const tasks = [];
+      const seen = new Set();
+      this.qi.preview_sheets.forEach((s, si) => {
+        const tid_col = this.qi.mappings[si]?.task_id_col;
+        const dur_col = this.qi.mappings[si]?.duration_col;
+        if (tid_col === null || tid_col === undefined) return;
+        s.preview_rows.forEach(row => {
+          const raw = (row[tid_col] || '').toString().trim().toLowerCase();
+          const m = raw.match(/[0-9a-f]{31,32}/i);
+          if (m && !seen.has(m[0])) {
+            seen.add(m[0]);
+            let dur = 0;
+            if (dur_col !== null && dur_col !== undefined) {
+              const v = parseFloat(row[dur_col]);
+              if (!isNaN(v)) dur = v;
+            }
+            tasks.push({task_id: m[0], duration_h: dur});
+          }
+        });
+      });
+      if (!tasks.length) {
+        this.toast('未找到有效的 task_id，请确认列映射正确'); return;
+      }
+      this.qi.task_text = tasks.map(t => t.task_id).join('\n');
+      tasks.forEach(t => { if (t.duration_h > 0) this.qi.durations[t.task_id] = t.duration_h; });
+      this.qi.extracted = true;
+      this.qi.preview_sheets = [];
+      this.toast('已提取 ' + tasks.length + ' 个 task_id（含时长 ' + tasks.filter(t=>t.duration_h>0).length + ' 个）');
+    },
+    qiParseFile() {
+      const input = document.getElementById('importFile');
+      if (!input.files || !input.files[0]) { this.toast('请先选择文件'); return; }
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append('file', file);
+      this.api('/api/v1/import/parse', {method:'POST', body:formData}).then(r => {
+        if (r.ok && r.ids.length) {
+          this.qi.task_text = r.ids.join('\n');
+          this.toast('识别到 ' + r.ids.length + ' 个 task_id');
+        } else {
+          this.toast(r.error || '未找到 task_id');
+        }
+      });
+    },
+    qiPrepare() {
+      const ids = this.qi_parsed;
+      if (!ids.length) { this.toast('未识别到 task_id'); return; }
+      if (!this.qi.agent_id) { this.toast('请先选择机器'); return; }
+      this.qi.loading = true; this.qi.tasks = [];
+      this.api('/api/v1/tasks/prepare', {method:'POST', body:{
+        task_ids: ids, agent_id: parseInt(this.qi.agent_id),
+        durations: this.qi.durations, obs_source_id: this.obsSources[0]?.id || null,
+      }}).then(r => {
+        this.qi.loading = false;
+        if (r.ok) {
+          this.qi.tasks = r.tasks;
+          this.qi.total_eps = r.tasks.reduce((s,t) => s+t.episode_count, 0);
+          this.qi.total_bytes = r.tasks.reduce((s,t) => s+t.total_bytes, 0);
+          this.toast('已分配 ' + r.count + ' 个 task');
+        } else {
+          this.toast('分配失败: ' + r.error);
+        }
+      });
+    },
+    qiCreateJob() {
+      if (!this.qi.tasks.length) return;
+      this.qi.creating = true;
+      const tasks = this.qi.tasks.map(t => ({
+        task_id: t.task_id,
+        disk_path: this.qi.overrides[t.task_id] || t.disk_path,
+        episodes: t.episodes?.split(',') || [],
+      }));
+      this.api('/api/v1/jobs', {method:'POST', body:{
+        name: 'job_'+Date.now(),
+        agent_id: parseInt(this.qi.agent_id),
+        tasks: tasks,
+        obs_source_id: this.obsSources[0]?.id || null,
+      }}).then(r => {
+        this.qi.creating = false;
+        if (r.ok) {
+          this.toast('作业已创建, ID: '+r.job_id);
+          this.qi = { agent_id: this.qi.agent_id, task_text:'', tasks:[], total_eps:0, total_bytes:0, loading:false, creating:false, durations:{}, overrides:{}, preview_sheets:[], file_key:'', active_sheet:0, mappings:[], extracted:false };
+          document.getElementById('importFile').value = '';
+          this.page = 'jobs'; this.loadJobs();
+        } else {
+          this.toast('创建失败: '+r.error);
+        }
+      });
+    },
+
+    // Task Queue (任务队列)
+    get pq_filtered() {
+      if (!this.pq.status_filter) return this.pq.tasks;
+      return this.pq.tasks.filter(t => t.status === this.pq.status_filter);
+    },
+    pqRefresh() { this.loadDashboard(); },
+    loadPendingTasks() {
+      this.api('/api/v1/tasks/pending').then(r => { if (r.ok) this.pq.tasks = r.tasks; });
+    },
+    pqToggleAll(e) {
+      this.pq.selected = e.target.checked ? this.pq.tasks.map(t => t.id) : [];
+    },
+    pqRetry(id) {
+      this.api('/api/v1/tasks/pending/retry', {method:'POST', body:{ids: [id]}}).then(r => {
+        if (r.ok) { this.toast('已重置为待处理'); this.loadPendingTasks(); }
+      });
+    },
+    pqRetrySelected() {
+      if (!this.pq.selected.length) return;
+      this.api('/api/v1/tasks/pending/retry', {method:'POST', body:{ids: this.pq.selected}}).then(r => {
+        if (r.ok) { this.toast('已重置 '+r.count+' 条'); this.loadPendingTasks(); }
+      });
+    },
+    pqDelete(id) {
+      if (!confirm('确定删除?')) return;
+      this.api('/api/v1/tasks/pending/'+id, {method:'DELETE'}).then(r => {
+        if (r.ok) { this.loadPendingTasks(); }
+      });
+    },
+
+    // Allocate (分配作业)
+    alPreview() {
+      if (!this.al.agent_id) { this.toast('请先选择机器'); return; }
+      this.al.loading = true; this.al.plan = [];
+      this.api('/api/v1/tasks/allocate-preview', {method:'POST', body:{agent_id: parseInt(this.al.agent_id)}}).then(r => {
+        this.al.loading = false;
+        if (r.ok) {
+          this.al.plan = r.plan;
+          this.al.unassigned = r.unassigned;
+          this.al.pending_count = r.total_tasks;
+        } else {
+          this.toast(r.error);
+        }
+      });
+    },
+    alCreateJob(idx) {
+      const disk = this.al.plan[idx];
+      if (!disk || !disk.tasks.length) return;
+      this.api('/api/v1/jobs', {method:'POST', body:{
+        name: 'job_'+Date.now(),
+        agent_id: parseInt(this.al.agent_id),
+        tasks: disk.tasks.map(t => ({task_id: t.task_id, disk_path: disk.disk_path, episodes: []})),
+        obs_source_id: this.obsSources[0]?.id || null,
+      }}).then(r => {
+        if (r.ok) {
+          this.toast('作业已创建');
+          this.al.plan.splice(idx, 1);
+          this.loadPendingTasks();
+        } else {
+          this.toast('创建失败: '+r.error);
+        }
+      });
+    },
+
+    get selectedAgentDisks() {
+      const aid = this.qi.agent_id || this.al.agent_id;
+      const a = this.agents.find(x => x.id == aid);
+      return a ? a.disks : [];
+    },
+    get diskWarning() {
+      const warns = [];
+      for (const d of this.selectedAgentDisks) {
+        if (d.total_bytes > 0) {
+          const pct = (d.total_bytes - d.free_bytes) / d.total_bytes * 100;
+          const free_gb = d.free_bytes / 1024 / 1024 / 1024;
+          if (pct > 95) {
+            warns.push(d.label + ' 仅剩 ' + free_gb.toFixed(1) + 'GB (' + pct.toFixed(0) + '% 已用)');
+          } else if (pct > 85) {
+            warns.push(d.label + ' 剩余 ' + free_gb.toFixed(1) + 'GB (' + pct.toFixed(0) + '% 已用)');
+          }
+        }
+      }
+      return warns.join('; ');
+    },
+
+    loadMonitor() {
+      // 加载监控面板数据
+      this.api('/api/v1/monitor').then(r => {
+        if (r.ok) {
+          this.mon.logs = r.logs;
+          this.mon.jobs = r.jobs;
+          this.mon.disks = r.disks;
+          this.mon.running = r.jobs.filter(j => j.status==='running').length;
+          this.mon.completed = r.jobs.filter(j => j.status==='completed').length;
+          this.mon.failed = r.jobs.filter(j => j.status==='failed').length;
+        }
+      });
+    },
+
+    _watch: null,
+  };
+}
+</script>
+</body>
+</html>
+

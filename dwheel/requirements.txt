@@ -1,0 +1,5 @@
+flask
+requests
+openpyxl
+xlrd
+psycopg2-binary
