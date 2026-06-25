@@ -455,8 +455,8 @@ def register_routes(app, _db, _auth, _utils):
             return jsonify({'ok': False, 'error': '该机器无磁盘信息，请先检测'}), 400
         for t in assigned:
             conn.execute(
-                'INSERT OR REPLACE INTO pending_tasks (task_id, agent_id, disk_path, episode_count, estimated_bytes, episodes, status) VALUES (?,?,?,?,?,?,?)',
-                (t['task_id'], agent_id, t['disk_path'], t['episode_count'], t['total_bytes'],
+                'INSERT OR REPLACE INTO pending_tasks (task_id, agent_id, batch_name, disk_path, episode_count, estimated_bytes, episodes, status) VALUES (?,?,?,?,?,?,?,?)',
+                (t['task_id'], agent_id, body.get('batch_name',''), '', t['episode_count'], t['total_bytes'],
                  ','.join(t['episodes'][:500]), 'pending')
             )
         conn.commit()
@@ -502,6 +502,46 @@ def register_routes(app, _db, _auth, _utils):
         conn.commit()
         return jsonify({'ok': True})
 
+    @app.route('/api/v1/tasks/pending/assign', methods=['POST'])
+    @require_auth
+    def tasks_pending_assign():
+        body = request.json or {}
+        ids = body.get('ids', [])
+        disk_path = body.get('disk_path', '')
+        if not ids or not disk_path:
+            return jsonify({'ok': False, 'error': '缺少 ids 或 disk_path'}), 400
+        conn = get_db()
+        for pid in ids:
+            conn.execute("UPDATE pending_tasks SET disk_path=? WHERE id=?", (disk_path, pid))
+        conn.commit()
+        return jsonify({'ok': True, 'count': len(ids)})
+
+
+    @app.route('/api/v1/tasks/pending/skip', methods=['POST'])
+    @require_auth
+    def tasks_pending_skip():
+        body = request.json or {}
+        task_ids = body.get('task_ids', [])
+        agent_id = body.get('agent_id')
+        if not task_ids or not agent_id:
+            return jsonify({'ok': False, 'error': '缺少 task_ids 或 agent_id'}), 400
+        conn = get_db()
+        for tid in task_ids:
+            conn.execute(
+                "INSERT OR REPLACE INTO pending_tasks (task_id, agent_id, batch_name, disk_path, episode_count, estimated_bytes, episodes, status) VALUES (?,?,?,?,?,?,?,?)",
+                (tid, agent_id, body.get('batch_name',''), '', 0, 0, '', 'skipped')
+            )
+        conn.commit()
+        return jsonify({'ok': True, 'count': len(task_ids)})
+
+    @app.route('/api/v1/tasks/pending/batch/<name>', methods=['DELETE'])
+    @require_auth
+    def tasks_pending_delete_batch(name):
+        conn = get_db()
+        conn.execute("DELETE FROM pending_tasks WHERE batch_name=?", (name,))
+        conn.commit()
+        return jsonify({'ok': True})
+
     @app.route('/api/v1/tasks/allocate-preview', methods=['POST'])
     @require_auth
     def allocate_preview():
@@ -517,10 +557,18 @@ def register_routes(app, _db, _auth, _utils):
         disks = conn.execute('SELECT * FROM disks WHERE agent_id=? ORDER BY free_bytes', (agent_id,)).fetchall()
         if not disks:
             return jsonify({'ok': False, 'error': '该机器无磁盘信息，请先检测'}), 400
-        disk_free = {d['path']: d['free_bytes'] for d in disks}
+        disk_free = {d['path']: int(d['free_bytes'] * 0.95) for d in disks}
         disk_label = {d['path']: d['label'] or os.path.basename(d['path']) for d in disks}
         disk_tasks = {d['path']: [] for d in disks}
         for t in pending:
+            if t['disk_path'] and t['disk_path'] in disk_free:
+                disk_free[t['disk_path']] -= (t['estimated_bytes'] or 0)
+                disk_tasks[t['disk_path']].append({
+                    'id': t['id'], 'task_id': t['task_id'],
+                    'episode_count': t['episode_count'],
+                    'size_gb': round((t['estimated_bytes'] or 0) / (1024**3), 2),
+                })
+                continue
             size = t['estimated_bytes'] or 0
             for d in disks:
                 if size <= disk_free[d['path']]:
@@ -675,6 +723,17 @@ def register_routes(app, _db, _auth, _utils):
         add_log('info', f'作业 #{jid} 已停止', conn)
         return jsonify({'ok': True})
 
+
+    @app.route('/api/v1/jobs/<int:jid>', methods=['DELETE'])
+    @require_auth
+    def delete_job(jid):
+        conn = get_db()
+        conn.execute('DELETE FROM job_tasks WHERE job_id=?', (jid,))
+        conn.execute('DELETE FROM jobs WHERE id=?', (jid,))
+        conn.commit()
+        return jsonify({'ok': True})
+
+
     # ═════ Monitor ═════
     @app.route('/api/v1/logs/file')
     @require_auth
@@ -706,6 +765,7 @@ def register_routes(app, _db, _auth, _utils):
                         jd['agent_failed'] = resp.get('failed', 0)
                         jd['agent_total'] = resp.get('total', 0)
                         jd['agent_elapsed'] = resp.get('elapsed', 0)
+                        jd['agent_speed'] = resp.get('speed', 0)
             job_list.append(jd)
         disks = conn.execute('SELECT d.*, a.name as agent_name FROM disks d JOIN agents a ON a.id=d.agent_id ORDER BY d.agent_id').fetchall()
         return jsonify({'ok': True, 'logs': logs, 'jobs': [dict(j) for j in job_list[:10]], 'disks': [dict(d) for d in disks]})

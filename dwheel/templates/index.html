@@ -6,46 +6,77 @@
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.9/dist/cdn.min.js"></script>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
-.login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; gap: 1rem; background: #f0f2f5; }
-.login-box { background: #fff; padding: 2rem; border-radius: 8px; width: 360px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-.login-box h1 { margin-bottom: 1.5rem; font-size: 1.25rem; text-align: center; color: #1a1a1a; font-weight: 600; }
-.login-box input { width: 100%; padding: 10px 12px; margin-bottom: 12px; border: 1px solid #d0d0d0; border-radius: 6px; font-size: 14px; outline: none; background: #fff; color: #1a1a1a; }
-.login-box input:focus { border-color: #2563eb; }
-.login-box button { width: 100%; padding: 10px; background: #2563eb; color: #fff; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; font-weight: 500; }
-.login-box button:hover { background: #1d4ed8; }
-.login-box .error { color: #dc2626; font-size: 13px; margin-top: 8px; text-align: center; }
+:root { --primary: #6366f1; --primary-hover: #4f46e5; --danger: #ef4444; --success: #10b981; --bg: #f1f5f9; --card: #fff; --border: #e2e8f0; --text: #1e293b; --muted: #94a3b8; --radius: 10px; }
+
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; -webkit-font-smoothing: antialiased; }
+
+/* Login */
+.login-page { display: flex; justify-content: center; align-items: center; min-height: 100vh; flex-direction: column; gap: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+.login-box { background: var(--card); padding: 2.5rem 2rem; border-radius: var(--radius); width: 380px; box-shadow: 0 4px 24px rgba(0,0,0,.12); }
+.login-box h1 { margin-bottom: 1.5rem; font-size: 1.5rem; text-align: center; color: var(--primary); font-weight: 700; }
+.login-box input { width: 100%; padding: 12px 14px; margin-bottom: 14px; border: 1.5px solid var(--border); border-radius: 8px; font-size: 14px; outline: none; background: var(--bg); color: var(--text); transition: border-color .2s, box-shadow .2s; }
+.login-box input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.15); }
+.login-box button { width: 100%; padding: 12px; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 600; transition: opacity .2s, transform .1s; }
+.login-box button:hover { opacity: .9; }
+.login-box button:active { transform: scale(.98); }
+.login-box .error { color: var(--danger); font-size: 13px; margin-top: 8px; text-align: center; }
+
+/* Layout */
 .layout { display: flex; min-height: 100vh; }
-.sidebar { width: 220px; background: #fff; border-right: 1px solid #e0e0e0; padding: 1rem; display: flex; flex-direction: column; }
-.sidebar h2 { font-size: 1rem; margin-bottom: 1.5rem; padding: 0 12px; color: #2563eb; font-weight: 700; }
-.sidebar a { display: block; padding: 8px 12px; margin: 1px 0; border-radius: 6px; color: #555; text-decoration: none; font-size: 14px; cursor: pointer; }
-.sidebar a:hover { background: #f0f0f0; color: #1a1a1a; }
-.sidebar a.active { background: #eff6ff; color: #2563eb; font-weight: 500; }
-.sidebar .logout { margin-top: auto; color: #dc2626; }
-.main { flex: 1; padding: 1.5rem; max-width: 960px; }
-.page-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; color: #1a1a1a; }
-.card { background: #fff; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: .75rem; border: 1px solid #e0e0e0; }
-.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin-bottom: 1rem; }
-.stat-card { background: #fff; border-radius: 8px; padding: 1rem; text-align: center; border: 1px solid #e0e0e0; }
-.stat-card .num { font-size: 1.75rem; font-weight: 700; color: #2563eb; }
-.stat-card .label { font-size: 12px; color: #888; margin-top: 2px; }
-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
-th { color: #888; font-weight: 500; font-size: 12px; }
-tr:hover { background: #fafafa; }
-.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
-.badge-green { background: #dcfce7; color: #166534; }
-.badge-yellow { background: #fef9c3; color: #854d0e; }
+.sidebar { width: 220px; background: var(--card); border-right: 1px solid var(--border); padding: 1.25rem 0 1rem 0; display: flex; flex-direction: column; z-index: 10; transition: transform .25s; }
+.sidebar h2 { font-size: 1.1rem; margin-bottom: 1.25rem; padding: 0 1.25rem; color: var(--primary); font-weight: 800; letter-spacing: -.5px; }
+.sidebar a { display: block; padding: 9px 1.25rem; margin: 2px .75rem; border-radius: 8px; color: var(--text); text-decoration: none; font-size: 14px; cursor: pointer; transition: background .15s, color .15s; }
+.sidebar a:hover { background: #f1f5ff; color: var(--primary); }
+.sidebar a.active { background: #eef2ff; color: var(--primary); font-weight: 600; }
+.sidebar .logout { margin-top: auto; color: var(--danger); }
+.sidebar .logout:hover { background: #fef2f2; }
+
+/* Mobile sidebar toggle */
+.sidebar-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 20; width: 40px; height: 40px; border-radius: 8px; background: var(--card); border: 1px solid var(--border); font-size: 18px; cursor: pointer; align-items: center; justify-content: center; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.3); z-index: 9; }
+
+.main { flex: 1; padding: 1.5rem; max-width: 1024px; overflow-x: hidden; }
+
+.page-title { font-size: 1.35rem; font-weight: 700; margin-bottom: 1rem; color: var(--text); letter-spacing: -.3px; }
+
+/* Cards */
+.card { background: var(--card); border-radius: var(--radius); padding: 1.1rem 1.35rem; margin-bottom: .85rem; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: box-shadow .2s; }
+.card:hover { box-shadow: 0 2px 8px rgba(0,0,0,.06); }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .85rem; margin-bottom: 1rem; }
+.stat-card { background: var(--card); border-radius: var(--radius); padding: 1.25rem 1rem; text-align: center; border: 1px solid var(--border); box-shadow: 0 1px 3px rgba(0,0,0,.04); transition: transform .15s; }
+.stat-card:hover { transform: translateY(-2px); }
+.stat-card .num { font-size: 2rem; font-weight: 800; color: var(--primary); line-height: 1.2; }
+.stat-card .label { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 500; text-transform: uppercase; letter-spacing: .5px; }
+
+/* Tables */
+.table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); white-space: nowrap; }
+th { color: var(--muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .5px; background: #f8fafc; }
+tr { transition: background .1s; }
+tr:hover { background: #f8fafc; }
+
+/* Badges */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+.badge-green { background: #d1fae5; color: #065f46; }
+.badge-yellow { background: #fef3c7; color: #92400e; }
 .badge-red { background: #fee2e2; color: #991b1b; }
 .badge-blue { background: #dbeafe; color: #1e40af; }
-.btn { display: inline-block; padding: 8px 16px; border-radius: 6px; border: none; font-size: 14px; cursor: pointer; font-weight: 500; }
-.btn-primary { background: #2563eb; color: #fff; }
-.btn-primary:hover { background: #1d4ed8; }
-.btn-danger { background: #dc2626; color: #fff; }
-.btn-danger:hover { background: #b91c1c; }
-.btn-default { background: #e0e0e0; color: #333; }
-.btn-default:hover { background: #d0d0d0; }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 9px 18px; border-radius: 8px; border: none; font-size: 14px; cursor: pointer; font-weight: 600; transition: all .15s; gap: 6px; }
+.btn:active { transform: scale(.97); }
+.btn-primary { background: var(--primary); color: #fff; }
+.btn-primary:hover { background: var(--primary-hover); box-shadow: 0 2px 8px rgba(99,102,241,.3); }
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; box-shadow: 0 2px 8px rgba(239,68,68,.3); }
+.btn-default { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.btn-default:hover { background: var(--border); }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text); }
+.btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+.btn-sm { padding: 5px 12px; font-size: 12px; border-radius: 6px; }
+
+/* Utility */
 .mr-2 { margin-right: 8px; }
 .mt-2 { margin-top: 8px; }
 .mb-2 { margin-bottom: 8px; }
@@ -53,19 +84,46 @@ tr:hover { background: #fafafa; }
 .gap-2 { gap: 8px; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
-.text-muted { color: #888; font-size: 13px; }
-.progress-bar { height: 20px; background: #eee; border-radius: 6px; overflow: hidden; position: relative; margin: 8px 0; }
-.progress-bar .fill { height: 100%; background: #2563eb; border-radius: 6px; transition: width 1s; }
-.progress-bar .text { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 500; }
-.hidden { display: none !important; }
-select, input[type="text"], input[type="number"] { border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #1a1a1a; padding: 8px 12px; font-size: 14px; outline: none; }
-select:focus, input:focus { border-color: #2563eb; }
+.text-muted { color: var(--muted); font-size: 13px; }
+
+/* Progress */
+.progress-bar { height: 20px; background: var(--bg); border-radius: 100px; overflow: hidden; position: relative; margin: 8px 0; }
+.progress-bar .fill { height: 100%; background: linear-gradient(90deg, var(--primary), #818cf8); border-radius: 100px; transition: width .6s ease; }
+.progress-bar .text { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #fff; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,.2); }
+
+/* Form */
+select, input[type="text"], input[type="number"] { border: 1.5px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); padding: 9px 12px; font-size: 14px; outline: none; transition: border-color .2s, box-shadow .2s; }
+select:focus, input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+textarea { border: 1.5px solid var(--border); border-radius: 8px; background: var(--card); color: var(--text); padding: 12px; font-size: 13px; font-family: 'SF Mono', 'Fira Code', monospace; width: 100%; min-height: 100px; outline: none; transition: border-color .2s, box-shadow .2s; resize: vertical; }
+textarea:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(99,102,241,.12); }
+
+/* Toast */
 .floating { position: fixed; bottom: 24px; right: 24px; z-index: 100; }
-.toast { background: #333; color: #fff; padding: 10px 16px; border-radius: 6px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,.2); animation: slideIn .2s; font-size: 13px; }
-@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-textarea { border: 1px solid #d0d0d0; border-radius: 6px; background: #fff; color: #1a1a1a; padding: 12px; font-size: 13px; font-family: monospace; width: 100%; min-height: 100px; outline: none; }
-textarea:focus { border-color: #2563eb; }
-@media (max-width: 768px) { .layout { flex-direction: column; } .sidebar { width: 100%; flex-direction: row; overflow-x: auto; } }
+.toast { background: var(--text); color: #fff; padding: 10px 16px; border-radius: 8px; margin-top: 8px; box-shadow: 0 4px 16px rgba(0,0,0,.15); animation: toastIn .25s ease; font-size: 13px; cursor: pointer; }
+@keyframes toastIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+/* Loading spinner */
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin .6s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Fade transition for page sections */
+.main > div { animation: fadeIn .2s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar-toggle { display: flex; }
+  .sidebar { position: fixed; top: 0; left: 0; height: 100vh; transform: translateX(-100%); width: 240px; }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay.open { display: block; }
+  .main { padding: 1rem; max-width: 100%; }
+  .card { padding: .9rem 1rem; }
+  .card-grid { grid-template-columns: repeat(2, 1fr); gap: .5rem; }
+  .stat-card .num { font-size: 1.5rem; }
+  .login-box { width: calc(100vw - 2rem); max-width: 380px; }
+  table { font-size: 12px; }
+  th, td { padding: 6px 8px; }
+}
 </style>
 </head>
 <body>
@@ -83,16 +141,17 @@ textarea:focus { border-color: #2563eb; }
 
   <!-- Main App -->
   <div x-show="token" class="layout">
-    <div class="sidebar">
+    <button class="sidebar-toggle" @click="sidebarOpen = !sidebarOpen" x-show="token" :class="{ open: sidebarOpen }">☰</button>
+    <div class="sidebar-overlay" @click="sidebarOpen = false" :class="{ open: sidebarOpen }"></div>
+    <div class="sidebar" :class="{ open: sidebarOpen }">
       <h2>dwheel</h2>
-      <a :class="{active: page==='dashboard'}" @click="page='dashboard'">概览</a>
-      <a :class="{active: page==='agents'}" @click="page='agents'">机器管理</a>
-      <a :class="{active: page==='jobs'}" @click="page='jobs'">下载作业</a>
-      <a :class="{active: page==='import'}" @click="page='import'">导入</a>
-      <a :class="{active: page==='queue'}" @click="page='queue'; loadPendingTasks()">任务队列</a>
-      <a :class="{active: page==='allocate'}" @click="page='allocate'; loadPendingTasks()">分配作业</a>
-      <a :class="{active: page==='monitor'}" @click="page='monitor'; loadMonitor()">监控</a>
-      <a :class="{active: page==='settings'}" @click="page='settings'">设置</a>
+      <a :class="{active: page==='dashboard'}" @click="navTo('dashboard')">概览</a>
+      <a :class="{active: page==='agents'}" @click="navTo('agents')">机器管理</a>
+      <a :class="{active: page==='jobs'}" @click="navTo('jobs')">下载作业</a>
+      <a :class="{active: page==='import'}" @click="navTo('import')">导入</a>
+      <a :class="{active: page==='queue'}" @click="navTo('queue'); loadPendingTasks()">任务队列</a>
+      <a :class="{active: page==='monitor'}" @click="navTo('monitor'); loadMonitor()">监控</a>
+      <a :class="{active: page==='settings'}" @click="navTo('settings')">设置</a>
       <a class="logout" @click="logout()">退出</a>
     </div>
     <div class="main">
@@ -174,9 +233,13 @@ textarea:focus { border-color: #2563eb; }
               <div class="flex justify-between items-center">
                 <div>
                   <strong x-text="j.name || 'job_'+j.id"></strong>
-                  <span :class="'badge '+(j.status==='running'?'badge-yellow':j.status==='completed'?'badge-green':'badge-blue')" style="margin-left:8px" x-text="j.status"></span>
+                  <span :class="'badge '+(j.status==='running'?'badge-yellow':j.status==='completed'?'badge-green':j.status==='pending'?'badge-blue':'badge-blue')" style="margin-left:8px" x-text="j.status"></span>
                 </div>
-                <div class="text-muted" x-text="new Date(j.created_at).toLocaleString()"></div>
+                <div class="flex gap-2 items-center">
+                  <button class="btn btn-sm btn-primary" @click.stop="startJob(j.id)" x-show="j.status==='pending'">启动</button>
+                  <button class="btn btn-sm btn-danger" @click.stop="deleteJob(j.id)">删除</button>
+                  <div class="text-muted" x-text="new Date(j.created_at).toLocaleString()"></div>
+                </div>
               </div>
               <div class="flex gap-2 mt-2 text-muted" style="font-size:13px">
                 <span x-text="'共 '+j.total_episodes+' 个文件'"></span>
@@ -194,6 +257,7 @@ textarea:focus { border-color: #2563eb; }
             <div class="flex justify-between items-center">
               <h3 x-text="selectedJob.name"></h3>
               <div>
+                <button class="btn btn-sm btn-primary" @click="startJob(selectedJob.id); selectedJob.status='running'" x-show="selectedJob.status==='pending'">启动</button>
                 <button class="btn btn-sm btn-danger" @click="stopJob(selectedJob.id)" x-show="selectedJob.status==='running'">停止</button>
               </div>
             </div>
@@ -264,67 +328,42 @@ textarea:focus { border-color: #2563eb; }
       <!-- Settings -->
       <div x-show="page==='monitor'">
         <h2 class="page-title">监控面板</h2>
-        
+
         <div class="card-grid">
-          <div class="stat-card"><div class="num" x-text="mon.running" :style="mon.running>0?'color:#2563eb':''">0</div><div class="label">运行中</div></div>
-          <div class="stat-card"><div class="num" x-text="mon.completed">0</div><div class="label">已完成</div></div>
-          <div class="stat-card"><div class="num" x-text="mon.failed" :style="mon.failed>0?'color:#dc2626':''">0</div><div class="label">失败</div></div>
-          <div class="stat-card"><div class="num" x-text="mon.disks.length">0</div><div class="label">磁盘数</div></div>
-        </div>
-
-        <div class="card" x-show="mon.disks.length">
-          <h3 class="mb-2">磁盘使用</h3>
-          <template x-for="d in mon.disks" :key="d.id">
-            <div class="mb-2" style="font-size:13px">
-              <div class="flex justify-between">
-                <span x-text="d.agent_name+': '+d.label"></span>
-                <span class="text-muted" x-text="((d.total_bytes-d.free_bytes)/1024/1024/1024).toFixed(1)+'G / '+(d.total_bytes/1024/1024/1024).toFixed(1)+'G'"></span>
-              </div>
-              <div class="progress-bar" style="height:16px;background:#eee">
-                <div class="fill" :style="'width:'+((d.total_bytes-d.free_bytes)/d.total_bytes*100)+'%;background:#3b82f6;border-radius:6px'"></div>
-              </div>
-            </div>
-          </template>
-        </div>
-
-        <div class="card" x-show="mon.jobs.length">
-          <h3 class="mb-2">下载进度</h3>
-          <template x-for="j in mon.jobs" :key="j.id">
-            <div class="mb-2" style="font-size:13px;border-bottom:1px solid #eee;padding-bottom:8px">
-              <div class="flex justify-between">
-                <span x-text="j.name || 'job_'+j.id"></span>
-                <span :class="'badge '+(j.status==='running'?'badge-yellow':j.status==='completed'?'badge-green':j.status==='failed'?'badge-red':'badge-blue')" x-text="j.status"></span>
-              </div>
-              <div class="progress-bar" style="height:16px;background:#eee">
-                <div class="fill" :style="'width:'+(j.total_episodes?((j.agent_completed||0+j.agent_failed||0)/j.total_episodes*100)+'%':'0%')+';background:#2563eb;border-radius:6px'"></div>
-                <div class="text" x-text="(j.agent_completed||0)+' / '+(j.total_episodes||0)"></div>
-              </div>
-              <div class="flex gap-2 text-muted mt-1" style="font-size:11px">
-                <span x-show="j.agent_failed>0" style="color:#dc2626" x-text="'失败: '+j.agent_failed"></span>
-                <span x-show="j.agent_elapsed" x-text="'耗时: '+Math.floor(j.agent_elapsed/60)+'m'"></span>
-              </div>
-            </div>
-          </template>
+          <div class="stat-card"><div class="num" x-text="mon.total_tasks" :style="mon.total_tasks>0?'color:var(--primary)':''">0</div><div class="label">总任务数</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.total_files" :style="mon.total_files>0?'color:var(--primary)':''">0</div><div class="label">总文件数</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.completed" style="color:var(--success)">0</div><div class="label">已完成</div></div>
+          <div class="stat-card"><div class="num" x-text="mon.failed" :style="mon.failed>0?'color:var(--danger)':''">0</div><div class="label">失败</div></div>
+          <div class="stat-card"><div class="num" style="font-size:1.4rem" x-text="mon.speed.toFixed(1)+' eps/s'" :style="mon.speed>0?'color:var(--primary)':''">0 eps/s</div><div class="label">下载速度</div></div>
+          <div class="stat-card"><div class="num" style="font-size:1.4rem" x-text="mon.eta_text" :style="mon.eta>0?'color:var(--primary)':''">--</div><div class="label">预计剩余</div></div>
         </div>
 
         <div class="card">
-          <h3 class="mb-2">操作日志</h3>
-          <div style="max-height:400px;overflow-y:auto;font-size:12px;font-family:monospace">
-            <div x-show="!mon.logs.length" class="text-muted">暂无日志</div>
-            <template x-for="l in mon.logs" :key="l.id">
-              <div style="padding:3px 0;border-bottom:1px solid #f0f0f0">
-                <span class="text-muted" x-text="l.created_at?.slice(5,19)"></span>
-                <span x-text="' ['+l.level+'] '" :style="l.level==='error'?'color:#dc2626':'color:#888'"></span>
-                <span x-text="l.message"></span>
-              </div>
-            </template>
+          <div class="progress-bar" style="height:24px">
+            <div class="fill" :style="'width:'+(mon.total_files>0?(mon.completed+mon.failed)/mon.total_files*100:0)+'%'"></div>
+            <div class="text" x-text="(mon.completed||0)+' / '+(mon.total_files||0)"></div>
           </div>
+        </div>
+
+        <div class="card" x-show="mon.disks.length">
+          <h3 class="mb-2">磁盘状态</h3>
+          <template x-for="d in mon.disks" :key="d.id">
+            <div class="mb-2" style="font-size:13px">
+              <div class="flex justify-between">
+                <span x-text="d.agent_name+': '+d.label" style="font-weight:500"></span>
+                <span class="text-muted" x-text="((d.total_bytes-d.free_bytes)/1024/1024/1024).toFixed(1)+' / '+(d.total_bytes/1024/1024/1024).toFixed(1)+' GB'"></span>
+              </div>
+              <div class="progress-bar" style="height:14px;background:var(--bg)">
+                <div class="fill" :style="'width:'+((d.total_bytes-d.free_bytes)/d.total_bytes*100)+'%;background:'+(d.free_bytes/d.total_bytes<.1?'var(--danger)':d.free_bytes/d.total_bytes<.2?'#f59e0b':'var(--primary)')+';border-radius:6px'"></div>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
 
-      <!-- Import (简化版：选机器 → 粘贴/上传 → 设时长 → 自动分配 → 一键下载) -->
+      <!-- Import (选机器 → 上传 → 提取 → 选择 → 保存到队列) -->
       <div x-show="page==='import'">
-        <h2 class="page-title">导入并下载</h2>
+        <h2 class="page-title">导入任务</h2>
 
         <div class="card">
           <h3 class="mb-2">选择机器</h3>
@@ -334,21 +373,13 @@ textarea:focus { border-color: #2563eb; }
               <option :value="a.id" x-text="a.name+' ('+a.host+')'"></option>
             </template>
           </select>
-          <span x-show="qi.agent_id && selectedAgentDisks.length" class="text-muted" style="margin-left:12px;font-size:13px">
-            <template x-for="d in selectedAgentDisks" :key="d.path">
-              <span style="margin-right:12px" x-text="d.label+': '+(d.free_bytes/1024/1024/1024).toFixed(1)+'GB'"></span>
-            </template>
-          </span>
         </div>
 
         <div class="card" x-show="qi.agent_id">
-          <h3 class="mb-2">上传表格（自动识别列 + 时长）</h3>
-          <p class="text-muted mb-2" style="font-size:13px">上传 xlsx/xls/csv/txt 文件，自动识别 task_id 和时长列</p>
-          <div class="flex gap-2" style="flex-wrap:wrap;align-items:center">
-            <input type="file" id="importFile" accept=".xlsx,.xls,.txt,.csv" style="font-size:13px"
-                   @change="qiUploadPreview($event)">
-            <span class="text-muted" style="font-size:13px">或直接粘贴 task_id 到下方文本框</span>
-          </div>
+          <h3 class="mb-2">上传表格</h3>
+          <p class="text-muted mb-2" style="font-size:13px">上传 xlsx/xls，自动识别 task_id 和时长列</p>
+          <input type="file" id="importFile" accept=".xlsx,.xls,.txt,.csv" style="font-size:13px"
+                 @change="qiUploadPreview($event)">
         </div>
 
         <!-- Mapping Panel -->
@@ -371,9 +402,7 @@ textarea:focus { border-color: #2563eb; }
                         style="width:auto;font-size:13px">
                   <option :value="null">-- 选择 --</option>
                   <template x-for="c in s.columns" :key="c.index">
-                    <option :value="c.index"
-                            x-text="(c.index+1)+'. '+c.header+(c.detected==='task_id'?' [自动识别]':'')"
-                            :style="c.detected==='task_id'?'color:#2563eb;font-weight:600':''"></option>
+                    <option :value="c.index" x-text="(c.index+1)+'. '+c.header+(c.detected==='task_id'?' ✓':'')" :style="c.detected==='task_id'?'color:var(--primary);font-weight:600':''"></option>
                   </template>
                 </select>
                 <span style="font-size:13px;margin-left:8px">时长列:</span>
@@ -382,25 +411,21 @@ textarea:focus { border-color: #2563eb; }
                         style="width:auto;font-size:13px">
                   <option :value="null">-- 选择 --</option>
                   <template x-for="c in s.columns" :key="c.index">
-                    <option :value="c.index"
-                            x-text="(c.index+1)+'. '+c.header+(c.detected==='duration'?' [自动识别]':'')"
-                            :style="c.detected==='duration'?'color:#2563eb;font-weight:600':''"></option>
+                    <option :value="c.index" x-text="(c.index+1)+'. '+c.header+(c.detected==='duration'?' ✓':'')" :style="c.detected==='duration'?'color:var(--primary);font-weight:600':''"></option>
                   </template>
                 </select>
               </div>
-              <div style="max-height:250px;overflow:auto;font-size:12px">
+              <div style="max-height:200px;overflow:auto;font-size:12px" class="table-wrap">
                 <table>
                   <tr>
                     <template x-for="c in s.columns" :key="c.index">
-                      <th x-text="c.header||'列'+(c.index+1)"
-                          :style="(c.index===qi.mappings[qi.active_sheet].task_id_col||c.index===qi.mappings[qi.active_sheet].duration_col)?'color:#2563eb':''"></th>
+                      <th x-text="c.header||'列'+(c.index+1)" :style="c.detected?'color:var(--primary)':''"></th>
                     </template>
                   </tr>
                   <template x-for="row in s.preview_rows" :key="row[0]">
                     <tr>
                       <template x-for="(cell,ci) in s.columns" :key="ci">
-                        <td x-text="row[ci]||''"
-                            :style="(ci===qi.mappings[qi.active_sheet].task_id_col||ci===qi.mappings[qi.active_sheet].duration_col)?'background:#eff6ff':''"></td>
+                        <td x-text="row[ci]||''" :style="(ci===qi.mappings[qi.active_sheet].task_id_col||ci===qi.mappings[qi.active_sheet].duration_col)?'background:#eef2ff':''"></td>
                       </template>
                     </tr>
                   </template>
@@ -415,59 +440,31 @@ textarea:focus { border-color: #2563eb; }
           </template>
         </div>
 
-        <!-- Text Input -->
-        <div class="card" x-show="qi.agent_id && !qi.preview_sheets.length">
-          <h3 class="mb-2">输入 Task ID</h3>
-          <textarea x-model="qi.task_text" placeholder="粘贴 task_id..."></textarea>
-        </div>
-
-        <div class="card" x-show="qi_parsed.length && qi.agent_id">
-          <h3 class="mb-2">交付时长设置（小时）</h3>
-          <p class="text-muted mb-2" style="font-size:13px">设置每个 task 的交付时长（0 或留空 = 全部下载）</p>
-          <div class="flex gap-2 items-center mb-2" style="font-weight:500;color:#888;font-size:12px">
-            <span style="min-width:200px">Task ID</span>
-            <span style="min-width:80px">时长(h)</span>
-          </div>
-          <template x-for="tid in qi_parsed" :key="tid">
-            <div class="flex gap-2 items-center mb-1" style="font-size:13px">
-              <span style="min-width:200px;font-family:monospace;font-size:12px" x-text="tid.slice(0,16)+'...'"></span>
-              <input type="number" x-model="qi.durations[tid]" placeholder="0" style="width:80px;padding:4px 8px" min="0" step="0.5">
-            </div>
-          </template>
-          <button class="btn btn-sm btn-primary mt-2" @click="qiPrepare()" x-text="qi.loading ? '查询中...' : '查询并自动分配'"></button>
-        </div>
-
-        <div class="card" x-show="qi.tasks.length">
+        <!-- Extracted task_id selection -->
+        <div class="card" x-show="qi.extracted_tasks.length">
           <div class="flex justify-between items-center mb-2">
-            <h3 class="mb-0">分配结果</h3>
-            <div>
-              <span class="text-muted" style="margin-right:12px" x-text="'共 '+qi.tasks.length+' 个 task, '+qi.total_eps+' episodes'"></span>
-              <span class="text-muted" x-text="'总计 '+(qi.total_bytes/1024/1024/1024).toFixed(2)+' GB'"></span>
+            <h3>
+              <span x-text="'提取 '+qi.extracted_tasks.length+' 个 task_id'"></span>
+              <span class="text-muted" style="font-size:12px;margin-left:8px" x-text="' 已选 '+qi.extracted_tasks.filter(t=>t.selected).length"></span>
+            </h3>
+            <div class="flex gap-2">
+              <input type="text" x-model="qi.batch_name" placeholder="批次名称" style="font-size:12px;width:140px;padding:4px 8px">
+              <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="qiSelectAll(true)">全选</button>
+              <button class="btn btn-sm btn-default" @click="qiSelectAll(false)">清空</button>
             </div>
           </div>
-          <div style="max-height:300px;overflow-y:auto;font-size:13px">
-            <table>
-              <tr><th style="min-width:200px">Task ID</th><th>磁盘</th><th style="width:160px">手动覆盖</th><th style="text-align:right">文件数</th><th style="text-align:right">大小</th></tr>
-              <template x-for="t in qi.tasks" :key="t.task_id">
-                <tr>
-                  <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
-                  <td x-text="t.disk_path.split('/').slice(-2).join('/')"></td>
-                  <td>
-                    <select x-model="qi.overrides[t.task_id]" style="font-size:12px;width:100%;padding:2px 4px">
-                      <option value="">自动 (当前磁盘)</option>
-                      <template x-for="d in selectedAgentDisks" :key="d.path">
-                        <option :value="d.path" x-text="d.label"></option>
-                      </template>
-                    </select>
-                  </td>
-                  <td style="text-align:right" x-text="t.episode_count"></td>
-                  <td style="text-align:right" x-text="(t.total_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
-                </tr>
-              </template>
-            </table>
+          <div style="max-height:400px;overflow-y:auto;font-size:12px;font-family:monospace;background:#f8fafc;padding:8px;border-radius:6px">
+            <template x-for="t in qi.extracted_tasks" :key="t.task_id">
+              <label style="display:flex;align-items:center;padding:3px 0;border-bottom:1px solid var(--border);cursor:pointer">
+                <input type="checkbox" :checked="t.selected" @change="t.selected = $event.target.checked" style="margin-right:8px">
+                <span style="min-width:260px;font-family:monospace" x-text="t.task_id"></span>
+                <span class="text-muted" style="margin-left:8px;min-width:50px" x-show="t.episode_count>0" x-text="t.episode_count+' eps'"></span>
+                <span class="text-muted" style="margin-left:8px;min-width:70px" x-show="t.size_gb>0" x-text="t.size_gb.toFixed(1)+' GB'"></span>
+                <span class="text-muted" style="margin-left:8px" x-show="t.duration_h>0" x-text="t.duration_h+'h'"></span>
+              </label>
+            </template>
           </div>
-          <div x-show="diskWarning" class="text-muted mb-2" style="color:#dc2626;font-size:13px" x-text="diskWarning"></div>
-          <button class="btn btn-primary mt-2" @click="qiCreateJob()" x-text="qi.creating ? '正在启动...' : '一键下载'"></button>
+          <button class="btn btn-primary mt-2" @click="qiSaveToQueue()" x-text="qi.saving ? '保存中...' : '保存到任务队列'"></button>
         </div>
       </div>
 
@@ -481,43 +478,67 @@ textarea:focus { border-color: #2563eb; }
             <option value="pending">待处理</option>
             <option value="running">运行中</option>
             <option value="completed">已完成</option>
+            <option value="skipped">已跳过</option>
           </select>
-          <span class="text-muted" style="font-size:13px" x-text="'共 '+pq.tasks.length+' 条'"></span>
+          <span class="text-muted" style="font-size:13px" x-text="'共 '+pq.tasks.length+' 条 '+pq.batches.length+' 批'"></span>
           <button class="btn btn-sm" style="background:#475569;color:#e2e8f0;margin-left:auto" @click="pqRefresh()">刷新</button>
-          <button class="btn btn-sm btn-primary" @click="pqRetrySelected()" x-show="pq.selected.length">重试选中</button>
         </div>
 
-        <div class="card" x-show="!pq.tasks.length"><div class="text-muted">暂无任务</div></div>
+        <div class="card" x-show="!pq.batches.length"><div class="text-muted">暂无任务</div></div>
 
-        <div class="card" x-show="pq.tasks.length">
-          <table>
-            <tr>
-              <th style="width:30px"><input type="checkbox" @change="pq.toggleAll($event)"></th>
-              <th>Task ID</th>
-              <th>磁盘</th>
-              <th style="text-align:right">文件数</th>
-              <th style="text-align:right">大小</th>
-              <th>状态</th>
-              <th style="text-align:right">操作</th>
-            </tr>
-            <template x-for="t in pq.filtered" :key="t.id">
-              <tr>
-                <td><input type="checkbox" :value="t.id" x-model="pq.selected"></td>
-                <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
-                <td style="font-size:12px" x-text="(t.disk_path||'').split('/').slice(-2).join('/')"></td>
-                <td style="text-align:right" x-text="t.episode_count"></td>
-                <td style="text-align:right;font-size:12px" x-text="(t.estimated_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
-                <td>
-                  <span :class="'badge '+(t.status==='completed'?'badge-green':t.status==='running'?'badge-yellow':'badge-blue')" x-text="t.status"></span>
-                </td>
-                <td style="text-align:right">
-                  <button class="btn btn-sm btn-danger" @click="pqDelete(t.id)">删除</button>
-                  <button class="btn btn-sm btn-primary" @click="pqRetry(t.id)" x-show="t.status!=='running'">重试</button>
-                </td>
-              </tr>
-            </template>
-          </table>
-        </div>
+        <template x-for="(batch,bidx) in pq.batches" :key="batch.name||bidx">
+          <div class="card">
+            <div class="flex justify-between items-center mb-2" @click="batch.open = !batch.open" style="cursor:pointer">
+              <div>
+                <strong x-text="batch.name||'未分组'"></strong>
+                <span class="badge badge-blue" style="margin-left:8px" x-text="batch.tasks.length+' 条'"></span>
+                <span class="badge" :class="batch.pending?'badge-yellow':'badge-green'" style="margin-left:4px" x-text="batch.pending+' 待处理'" x-show="batch.pending"></span>
+                <span class="badge badge-red" style="margin-left:4px" x-show="batch.skipped" x-text="batch.skipped+' 已跳过'"></span>
+              </div>
+              <div class="flex gap-2">
+                <button class="btn btn-sm btn-danger" @click.stop="pqDeleteBatch(batch.name)" x-show="batch.name">删这组</button>
+                <span x-text="batch.open ? '▲' : '▼'" style="font-size:12px;color:var(--muted)"></span>
+              </div>
+            </div>
+            <div x-show="batch.open">
+              <!-- Create job controls -->
+              <div class="flex gap-2 mb-2" style="flex-wrap:wrap;align-items:center" x-show="batch.pending">
+                <input type="text" :id="'jobname_'+batch.name" placeholder="作业名称" style="font-size:12px;width:140px;padding:4px 8px">
+                <select :id="'disk_'+batch.name" style="font-size:12px;width:auto;padding:4px 8px">
+                  <option value="">选择磁盘</option>
+                  <template x-for="d in agents[0]?.disks" :key="d.path">
+                    <option :value="d.path" x-text="d.label+' ('+(d.free_bytes/1024/1024/1024).toFixed(0)+'GB)'"></option>
+                  </template>
+                </select>
+                <button class="btn btn-sm btn-primary" @click="pqCreateJob(batch)">创建下载</button>
+              </div>
+              <div class="table-wrap">
+              <table>
+                <tr>
+                  <th>Task ID</th>
+                  <th style="text-align:right">文件数</th>
+                  <th style="text-align:right">大小</th>
+                  <th>状态</th>
+                  <th style="text-align:right">操作</th>
+                </tr>
+                <template x-for="t in batch.tasks" :key="t.id">
+                  <tr>
+                    <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
+                    <td style="text-align:right" x-text="t.episode_count"></td>
+                    <td style="text-align:right;font-size:12px" x-text="(t.estimated_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
+                    <td>
+                      <span :class="'badge '+(t.status==='completed'?'badge-green':t.status==='running'?'badge-yellow':t.status==='skipped'?'badge-red':'badge-blue')" x-text="t.status"></span>
+                    </td>
+                    <td style="text-align:right">
+                      <button class="btn btn-sm btn-danger" @click="pqDelete(t.id)">删除</button>
+                      <button class="btn btn-sm btn-primary" @click="pqRetry(t.id)" x-show="t.status==='skipped'||t.status==='completed'">重试</button>
+                    </td>
+                  </tr>
+                </template>
+              </table>
+            </div>
+          </div>
+        </template>
       </div>
 
       <!-- Allocate -->
@@ -532,36 +553,46 @@ textarea:focus { border-color: #2563eb; }
                 <option :value="a.id" x-text="a.name+' ('+a.host+')'"></option>
               </template>
             </select>
-            <button class="btn btn-sm btn-primary" @click="alPreview()" x-text="al.loading ? '计算中...' : '预览分配'"></button>
-            <span class="text-muted" style="font-size:13px" x-show="al.pending_count>0" x-text="'待处理: '+al.pending_count+' 个 task'"></span>
+            <button class="btn btn-sm btn-primary" @click="alLoad()">加载任务</button>
           </div>
         </div>
 
-        <div class="card" x-show="al.plan.length">
-          <h3 class="mb-2">分配方案</h3>
-          <template x-for="(p,i) in al.plan" :key="p.disk_path">
-            <div class="mb-3" style="border:1px solid #e0e0e0;border-radius:8px;padding:12px">
-              <div class="flex justify-between items-center mb-2">
-                <div>
-                  <strong x-text="p.label"></strong>
-                  <span class="text-muted" style="margin-left:8px;font-size:12px" x-text="p.free_gb.toFixed(0)+'GB 可用'"></span>
-                </div>
-                <div class="text-muted" style="font-size:13px">
-                  <span x-text="p.task_count+' 个 task'"></span>
-                  <span style="margin-left:8px" x-text="p.total_size_gb.toFixed(1)+' GB'"></span>
-                  <span style="margin-left:8px" x-text="'分配后剩余 '+p.remaining_gb.toFixed(1)+' GB'"></span>
-                </div>
-              </div>
-              <div class="progress-bar" style="height:14px">
-                <div class="fill" :style="'width:'+((p.free_gb-p.remaining_gb)/p.free_gb*100)+'%'"></div>
-              </div>
-              <button class="btn btn-sm btn-primary mt-2" @click="alCreateJob(i)">下载这批</button>
+        <!-- 任务列表 + 手动分配 -->
+        <div class="card" x-show="al.all_tasks.length">
+          <div class="flex justify-between items-center mb-2">
+            <h3 x-text="'待分配 ('+al.all_tasks.filter(t=>!t.disk_path).length+'/'+al.all_tasks.length+')'"></h3>
+            <div class="flex gap-2">
+              <select x-model="al.assign_disk" style="width:auto;font-size:12px">
+                <option value="">-- 分配到磁盘 --</option>
+                <template x-for="d in selectedAgentDisks" :key="d.path">
+                  <option :value="d.path" x-text="d.label+' 自由 '+(d.free_bytes*0.95/1024/1024/1024).toFixed(0)+'GB'"></option>
+                </template>
+              </select>
+              <button class="btn btn-sm" style="background:#475569;color:#e2e8f0" @click="alManualAssign()">分配并启动</button>
             </div>
-          </template>
-          <div class="mt-2" style="font-size:13px;color:#888" x-show="al.unassigned>0" x-text="'剩余 '+al.unassigned+' 个 task 磁盘放不下，等待重新分配'"></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <tr>
+                <th style="width:30px"><input type="checkbox" @change="alToggleAll($event)"></th>
+                <th>Task ID</th>
+                <th style="text-align:right">文件数</th>
+                <th style="text-align:right">大小</th>
+              </tr>
+              <template x-for="t in al.all_tasks" :key="t.id">
+                <tr>
+                  <td><input type="checkbox" :value="t.id" x-model="al.selected"></td>
+                  <td style="font-family:monospace;font-size:12px" x-text="t.task_id.slice(0,16)+'...'"></td>
+                  <td style="text-align:right" x-text="t.episode_count"></td>
+                  <td style="text-align:right;font-size:12px" x-text="(t.estimated_bytes/1024/1024/1024).toFixed(2)+' GB'"></td>
+                </tr>
+              </template>
+            </table>
+          </div>
         </div>
 
-        <div class="card" x-show="!al.plan.length && al.pending_count>0"><div class="text-muted">选机器后点「预览分配」</div></div>
+        <div class="card" x-show="al.all_tasks.length===0 && al.agent_id"><div class="text-muted">无待分配任务，请先导入</div></div>
+      </div>
       </div>
 
       <div x-show="page==='settings'">
@@ -605,10 +636,11 @@ function app() {
     username: '', password: '', error: '',
     page: 'dashboard',
     toasts: [],
+    sidebarOpen: false,
 
     // Dashboard
     dashboard: { agents:0, online:0, jobs_running:0, jobs_completed:0 },
-    mon: { logs:[], jobs:[], disks:[], running:0, completed:0, failed:0 },
+    mon: { logs:[], jobs:[], disks:[], running:0, completed:0, failed:0, total_tasks:0, total_files:0, speed:0, eta:0, eta_text:'--' },
 
     // Agents
     agents: [],
@@ -631,21 +663,23 @@ function app() {
     importResult: { ids:[], estimates:[], estimating:false, total_episodes:0, total_size:0, total_size_text:'' },
 
     // Quick Import (新版一键流程)
-    qi: { agent_id:'', task_text:'', tasks:[], total_eps:0, total_bytes:0, loading:false, creating:false, durations:{}, overrides:{}, preview_sheets:[], file_key:'', active_sheet:0, mappings:[], extracted:false },
+    qi: { agent_id:'', task_text:'', tasks:[], total_eps:0, total_bytes:0, loading:false, creating:false, durations:{}, overrides:{}, preview_sheets:[], file_key:'', active_sheet:0, mappings:[], extracted:false, extracted_tasks:[], saving:false, estimating:false, total_estimate:0, batch_name:'' },
 
     // Pending Queue
-    pq: { tasks:[], selected:[], status_filter:'' },
+    pq: { tasks:[], status_filter:'', batches:[] },
 
     // Allocate
-    al: { agent_id:'', plan:[], pending_count:0, unassigned:0, loading:false },
+    al: { agent_id:'', plan:[], pending_count:0, unassigned:0, loading:false, all_tasks:[], selected:[], assign_disk:'' },
 
     init() {
       if (this.token) this.loadDashboard();
-      setInterval(() => { this.autoRefreshJob(); }, 1000);
-      setInterval(() => { if (this.page === 'monitor') this.loadMonitor(); }, 2000);
+      setInterval(() => { this.autoRefreshJob(); }, 500);
+      setInterval(() => { if (this.page === 'monitor') this.loadMonitor(); }, 500);
     },
 
     toast(msg) { this.toasts.push(msg); setTimeout(() => this.toasts.shift(), 3000); },
+
+    navTo(page) { this.page = page; this.sidebarOpen = false; },
 
     api(path, opts={}) {
       opts.headers = opts.headers || {};
@@ -701,6 +735,18 @@ function app() {
     // Jobs
     loadJobs() {
       this.api('/api/v1/jobs').then(r => { if (r.ok) this.jobs = r.jobs; });
+    },
+    startJob(id) {
+      this.api('/api/v1/jobs/'+id+'/start', {method:'POST'}).then(r => {
+        if (r.ok) { this.toast('作业已启动'); this.loadJobs(); }
+        else { this.toast('启动失败: '+r.error); }
+      });
+    },
+    deleteJob(id) {
+      if (!confirm('确定删除此作业?')) return;
+      this.api('/api/v1/jobs/'+id, {method:'DELETE'}).then(r => {
+        if (r.ok) { this.loadJobs(); if (this.selectedJob?.id === id) this.selectedJob = null; }
+      });
     },
     viewJob(id) {
       // 查看作业详情（触发自动刷新）
@@ -776,18 +822,65 @@ function app() {
               const v = parseFloat(row[dur_col]);
               if (!isNaN(v)) dur = v;
             }
-            tasks.push({task_id: m[0], duration_h: dur});
+            tasks.push({task_id: m[0], duration_h: dur, selected: true});
           }
         });
       });
-      if (!tasks.length) {
-        this.toast('未找到有效的 task_id，请确认列映射正确'); return;
-      }
-      this.qi.task_text = tasks.map(t => t.task_id).join('\n');
-      tasks.forEach(t => { if (t.duration_h > 0) this.qi.durations[t.task_id] = t.duration_h; });
+      if (!tasks.length) { this.toast('未找到有效的 task_id'); return; }
+      this.qi.extracted_tasks = tasks;
       this.qi.extracted = true;
       this.qi.preview_sheets = [];
-      this.toast('已提取 ' + tasks.length + ' 个 task_id（含时长 ' + tasks.filter(t=>t.duration_h>0).length + ' 个）');
+      this.toast('已提取 ' + tasks.length + ' 个 task_id');
+    },
+    qiSaveToQueue() {
+      const selected = this.qi.extracted_tasks.filter(t => t.selected);
+      const skipped = this.qi.extracted_tasks.filter(t => !t.selected);
+      if (!selected.length && !skipped.length) { this.toast('无 task_id'); return; }
+      this.qi.saving = true;
+      let done = 0, total = (selected.length > 0) + (skipped.length > 0);
+      const check = () => { done++; if (done >= total) { this.qi.saving = false; this.qi.extracted_tasks = []; this.qi.extracted = false; document.getElementById('importFile').value = ''; }};
+      if (selected.length) {
+        this.api('/api/v1/tasks/prepare', {method:'POST', body:{
+          task_ids: selected.map(t => t.task_id), agent_id: parseInt(this.qi.agent_id),
+          durations: {}, obs_source_id: this.obsSources[0]?.id || null,
+          batch_name: this.qi.batch_name || (new Date().toISOString().slice(0,10) + '_' + selected.length.toString()),
+        }}).then(r => {
+          if (r.ok) this.toast('已添加 ' + selected.length + ' 个任务（' + r.count + ' 个已发现）');
+          check();
+        });
+      } else check();
+      if (skipped.length) {
+        this.api('/api/v1/tasks/pending/skip', {method:'POST', body:{
+          task_ids: skipped.map(t => t.task_id), agent_id: parseInt(this.qi.agent_id),
+          batch_name: this.qi.batch_name || (new Date().toISOString().slice(0,10) + '_' + skipped.length.toString()),
+        }}).then(r => {
+          if (r.ok) this.toast('已跳过 ' + skipped.length + ' 个');
+          check();
+        });
+      } else check();
+    },
+    qiSelectAll(v) {
+      this.qi.extracted_tasks.forEach(t => { t.selected = v; });
+    },
+    qiEstimateSizes() {
+      const selected = this.qi.extracted_tasks.filter(t => t.selected);
+      const ids = selected.length ? selected.map(t => t.task_id) : this.qi.extracted_tasks.map(t => t.task_id);
+      if (!ids.length) return;
+      this.qi.estimating = true;
+      this.api('/api/v1/tasks/info', {method:'POST', body:{task_ids: ids, durations: {}, obs_source_id: this.obsSources[0]?.id || null}}).then(r => {
+        this.qi.estimating = false;
+        if (r.ok && r.tasks) {
+          const map = {};
+          r.tasks.forEach(t => { map[t.task_id] = {episode_count: t.episode_count, estimated_bytes: t.estimated_bytes}; });
+          this.qi.extracted_tasks.forEach(t => {
+            if (map[t.task_id]) {
+              t.episode_count = map[t.task_id].episode_count;
+              t.size_gb = map[t.task_id].estimated_bytes / 1024 / 1024 / 1024;
+            }
+          });
+          this.qi.total_estimate = r.tasks.reduce((s,t) => s + (t.estimated_bytes||0), 0);
+        }
+      });
     },
     qiParseFile() {
       const input = document.getElementById('importFile');
@@ -857,20 +950,44 @@ function app() {
     },
     pqRefresh() { this.loadDashboard(); },
     loadPendingTasks() {
-      this.api('/api/v1/tasks/pending').then(r => { if (r.ok) this.pq.tasks = r.tasks; });
+      this.api('/api/v1/tasks/pending').then(r => { if (r.ok) {
+        this.pq.tasks = r.tasks;
+        const groups = {};
+        for (const t of r.tasks) {
+          const key = t.batch_name || '未分组';
+          if (!groups[key]) groups[key] = {name: key, tasks: [], open: key!=='未分组', pending:0, skipped:0};
+          groups[key].tasks.push(t);
+          if (t.status === 'pending') groups[key].pending++;
+          if (t.status === 'skipped') groups[key].skipped++;
+        }
+        this.pq.batches = Object.values(groups).sort((a,b) => (a.name > b.name ? -1 : 1));
+        this.al.pending_count = r.tasks.filter(t => t.status==='pending').length;
+      }});
     },
-    pqToggleAll(e) {
-      this.pq.selected = e.target.checked ? this.pq.tasks.map(t => t.id) : [];
+    pqDeleteBatch(name) {
+      if (!confirm('删除整组: ' + name + ' ?')) return;
+      this.api('/api/v1/tasks/pending/batch/' + encodeURIComponent(name), {method:'DELETE'}).then(r => {
+        if (r.ok) { this.toast('已删除'); this.loadPendingTasks(); }
+      });
+    },
+    pqCreateJob(batch) {
+      const pending = batch.tasks.filter(t => t.status === 'pending');
+      if (!pending.length) return;
+      const disk = document.getElementById('disk_' + batch.name)?.value;
+      const jobName = document.getElementById('jobname_' + batch.name)?.value || ('job_' + batch.name.substring(0, 10) + '_' + pending.length);
+      if (!disk) { this.toast('请选择磁盘'); return; }
+      this.api('/api/v1/jobs', {method:'POST', body:{
+        name: jobName, agent_id: pending[0].agent_id,
+        tasks: pending.map(t => ({task_id: t.task_id, disk_path: disk, episodes: []})),
+        obs_source_id: this.obsSources[0]?.id || null, start: false,
+      }}).then(r => {
+        if (r.ok) { this.toast('已创建作业 #'+r.job_id); this.loadPendingTasks(); }
+        else { this.toast('创建失败: '+r.error); }
+      });
     },
     pqRetry(id) {
       this.api('/api/v1/tasks/pending/retry', {method:'POST', body:{ids: [id]}}).then(r => {
         if (r.ok) { this.toast('已重置为待处理'); this.loadPendingTasks(); }
-      });
-    },
-    pqRetrySelected() {
-      if (!this.pq.selected.length) return;
-      this.api('/api/v1/tasks/pending/retry', {method:'POST', body:{ids: this.pq.selected}}).then(r => {
-        if (r.ok) { this.toast('已重置 '+r.count+' 条'); this.loadPendingTasks(); }
       });
     },
     pqDelete(id) {
@@ -881,36 +998,73 @@ function app() {
     },
 
     // Allocate (分配作业)
+    alLoad() {
+      if (!this.al.agent_id) { this.toast('请先选择机器'); return; }
+      this.al.selected = []; this.al.plan = [];
+      this.api('/api/v1/tasks/pending?agent_id=' + this.al.agent_id + '&status=pending').then(r => {
+        if (r.ok) {
+          this.al.all_tasks = r.tasks;
+          this.al.pending_count = r.tasks.length;
+        }
+      });
+    },
+    alToggleAll(e) {
+      this.al.selected = e.target.checked ? this.al.all_tasks.filter(t => !t.disk_path).map(t => t.id) : [];
+    },
+    alManualAssign() {
+      if (!this.al.selected.length || !this.al.assign_disk) { this.toast('请选择任务和磁盘'); return; }
+      const selected_ids = [...this.al.selected];
+      const tasks = this.al.all_tasks.filter(t => this.al.selected.includes(t.id));
+      const disk = this.selectedAgentDisks.find(d => d.path === this.al.assign_disk);
+      const limit_gb = (disk?.free_bytes || 0) * 0.95 / 1024 / 1024 / 1024;
+      // Sort by size descending, greedily fit as many as possible
+      tasks.sort((a,b) => (b.estimated_bytes||0) - (a.estimated_bytes||0));
+      let used = 0;
+      const fit = [];
+      const over = [];
+      for (const t of tasks) {
+        const gb = (t.estimated_bytes || 0) / 1024 / 1024 / 1024;
+        if (used + gb <= limit_gb) { used += gb; fit.push(t); }
+        else { over.push(t); }
+      }
+      if (!fit.length) { this.toast('磁盘容量不足'); return; }
+
+      this.api('/api/v1/tasks/pending/assign', {method:'POST', body:{
+        ids: fit.map(t => t.id), disk_path: this.al.assign_disk,
+      }}).then(r => {
+        if (r.ok) {
+          this.api('/api/v1/jobs', {method:'POST', body:{
+            name: 'job_'+Date.now(), agent_id: parseInt(this.al.agent_id),
+            tasks: fit.map(t => ({task_id: t.task_id, disk_path: this.al.assign_disk, episodes: []})),
+            obs_source_id: this.obsSources[0]?.id || null, start: false,
+          }}).then(r2 => {
+            if (r2.ok) {
+              let msg = '已创建作业 #'+r2.job_id + ' (分配 '+fit.length+' 个task, '+used.toFixed(0)+'GB, 剩余 '+(limit_gb-used).toFixed(0)+'GB)';
+              if (over.length) msg += ', ' + over.length + ' 个超出容量留在队列';
+              this.toast(msg);
+              this.al.all_tasks = this.al.all_tasks.filter(t => !fit.find(f => f.id === t.id));
+              this.al.selected = []; this.al.assign_disk = '';
+            } else { this.toast('创建失败: '+r2.error); }
+          });
+        }
+      });
+    },
     alPreview() {
       if (!this.al.agent_id) { this.toast('请先选择机器'); return; }
-      this.al.loading = true; this.al.plan = [];
+      this.al.loading = true; this.al.plan = []; this.al.unassigned_tasks = [];
       this.api('/api/v1/tasks/allocate-preview', {method:'POST', body:{agent_id: parseInt(this.al.agent_id)}}).then(r => {
         this.al.loading = false;
         if (r.ok) {
           this.al.plan = r.plan;
           this.al.unassigned = r.unassigned;
           this.al.pending_count = r.total_tasks;
-        } else {
-          this.toast(r.error);
-        }
-      });
-    },
-    alCreateJob(idx) {
-      const disk = this.al.plan[idx];
-      if (!disk || !disk.tasks.length) return;
-      this.api('/api/v1/jobs', {method:'POST', body:{
-        name: 'job_'+Date.now(),
-        agent_id: parseInt(this.al.agent_id),
-        tasks: disk.tasks.map(t => ({task_id: t.task_id, disk_path: disk.disk_path, episodes: []})),
-        obs_source_id: this.obsSources[0]?.id || null,
-      }}).then(r => {
-        if (r.ok) {
-          this.toast('作业已创建');
-          this.al.plan.splice(idx, 1);
-          this.loadPendingTasks();
-        } else {
-          this.toast('创建失败: '+r.error);
-        }
+          // Collect unassigned tasks from plan
+          const assigned = new Set();
+          r.plan.forEach(p => p.tasks.forEach(t => assigned.add(t.task_id)));
+          this.al.unassigned_tasks = this.al.all_tasks.filter(t => !assigned.has(t.task_id)).map(t => ({
+            task_id: t.task_id, episode_count: t.episode_count, size_gb: (t.estimated_bytes/1024/1024/1024).toFixed(2)
+          }));
+        } else { this.toast(r.error); }
       });
     },
 
@@ -936,15 +1090,32 @@ function app() {
     },
 
     loadMonitor() {
-      // 加载监控面板数据
       this.api('/api/v1/monitor').then(r => {
         if (r.ok) {
-          this.mon.logs = r.logs;
-          this.mon.jobs = r.jobs;
+          let completed = 0, failed = 0, total = 0, speed = 0, tasks_count = 0;
+          r.jobs.forEach(j => {
+            if (j.status === 'running' || j.status === 'completed' || j.status === 'partial') {
+              completed += (j.agent_completed || 0);
+              failed += (j.agent_failed || 0);
+              total += (j.agent_total || j.total_episodes || 0);
+              speed += (j.agent_speed || 0);
+              tasks_count++;
+            }
+          });
+          this.mon.total_tasks = tasks_count;
+          this.mon.total_files = total;
+          this.mon.completed = completed;
+          this.mon.failed = failed;
+          this.mon.speed = speed;
+          const remaining = total - completed - failed;
+          this.mon.eta = speed > 0 ? remaining / speed : 0;
+          if (this.mon.eta > 0) {
+            const h = Math.floor(this.mon.eta / 3600);
+            this.mon.eta_text = h > 0 ? h+'h '+Math.floor(this.mon.eta%3600/60)+'m' : Math.floor(this.mon.eta/60)+'m'+Math.floor(this.mon.eta%60)+'s';
+          } else {
+            this.mon.eta_text = '--';
+          }
           this.mon.disks = r.disks;
-          this.mon.running = r.jobs.filter(j => j.status==='running').length;
-          this.mon.completed = r.jobs.filter(j => j.status==='completed').length;
-          this.mon.failed = r.jobs.filter(j => j.status==='failed').length;
         }
       });
     },

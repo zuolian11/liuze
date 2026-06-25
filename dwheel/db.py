@@ -99,6 +99,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             task_id TEXT NOT NULL,
             agent_id INTEGER REFERENCES agents(id),
+            batch_name TEXT DEFAULT '',
             disk_path TEXT DEFAULT '',
             episode_count INTEGER DEFAULT 0,
             estimated_bytes INTEGER DEFAULT 0,
@@ -110,6 +111,14 @@ def init_db():
     ''')
     conn.commit()
     conn.close()
+    # Migration: add batch_name
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.execute("ALTER TABLE pending_tasks ADD COLUMN batch_name TEXT DEFAULT ''")
+        conn.commit()
+        conn.close()
+    except:
+        pass
     try:
         conn = sqlite3.connect(DB_PATH)
         conn.execute('''CREATE TABLE IF NOT EXISTS pending_tasks (

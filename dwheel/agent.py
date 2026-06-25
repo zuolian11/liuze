@@ -288,8 +288,8 @@ class AgentHandler(BaseHTTPRequestHandler):
                 for line in open('/proc/mounts'):
                     parts = line.split()
                     if len(parts) < 2: continue
-                    dev, mnt = parts[0], parts[1]
-                    if not mnt.startswith('/media/'): continue
+                    dev, mnt = parts[0], parts[1].replace('\\040', ' ').replace('\\011', '\t').replace('\\012', '\n')
+                    if not (mnt.startswith('/media/') or mnt.startswith('/mnt/')): continue
                     if not dev.startswith('/dev/'): continue
                     if dev in seen: continue
                     seen.add(dev)
